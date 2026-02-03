@@ -38,7 +38,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin
       onLoginSuccess(user);
       onClose();
     } else {
-      setError('Invalid OTP. Try 1234');
+      setError('Invalid OTP.');
     }
   };
 
