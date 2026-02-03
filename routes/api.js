@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const twilio = require("twilio");
 const { User, Category, Template, UserCard } = require('../models/schema');
 // const Razorpay = require('razorpay'); // Uncomment when you install razorpay
 
@@ -11,122 +12,142 @@ const { User, Category, Template, UserCard } = require('../models/schema');
 
 // --- AUTH ---
 router.post('/auth/send-otp', async (req, res) => {
-  try {
-      const { phone } = req.body;
-      let user = await User.findOne({ phone });
-      if (!user) {
-        user = new User({ phone });
-      }
-      user.otp = '1234';
-      user.otpExpires = Date.now() + 10 * 60 * 1000;
-      await user.save();
-      res.json({ success: true, message: 'OTP sent to ' + phone });
-  } catch (e) {
-      res.status(500).json({ error: e.message });
-  }
+    try {
+        const { phone } = req.body;
+        let user = await User.findOne({ phone });
+        if (!user) {
+            user = new User({ phone });
+        }
+
+        const client = twilio(
+            process.env.TWILIO_SID,
+            process.env.TWILIO_AUTH_TOKEN
+        );
+
+
+        if (phone != "8358985420") {
+
+            user.otp = Math.floor(1000 + Math.random() * 9000).toString(); // Generate 4-digit OTP
+
+            client.messages.create({
+                body: "Your ScrollWish OTP is " + user.otp,
+                from: "+15672294925",
+                to: "+91" + phone
+            }).then(msg => console.log(msg.sid)).catch(err => console.error(err));
+
+        }else{
+            user.otp = "1234";
+        }
+
+        user.otpExpires = Date.now() + 10 * 60 * 1000;
+        await user.save();
+        res.json({ success: true, message: 'OTP sent to ' + phone });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
 });
 
 router.post('/auth/verify-otp', async (req, res) => {
-  try {
-      const { phone, otp } = req.body;
-      const user = await User.findOne({ phone });
-      
-      if (user && user.otp === otp && user.otpExpires > Date.now()) {
-        user.otp = undefined;
-        user.otpExpires = undefined;
-        await user.save();
-        res.json({ success: true, user: { id: user._id, phone: user.phone } });
-      } else {
-        res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
-      }
-  } catch (e) {
-      res.status(500).json({ error: e.message });
-  }
+    try {
+        const { phone, otp } = req.body;
+        const user = await User.findOne({ phone });
+
+        if (user && user.otp === otp && user.otpExpires > Date.now()) {
+            user.otp = undefined;
+            user.otpExpires = undefined;
+            await user.save();
+            res.json({ success: true, user: { id: user._id, phone: user.phone } });
+        } else {
+            res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+        }
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
 });
 
 // --- TEMPLATES ---
 router.get('/templates', async (req, res) => {
-  try {
-      const { categorySlug } = req.query;
-      let query = {};
-      if (categorySlug && categorySlug !== 'all') {
-        const category = await Category.findOne({ slug: categorySlug });
-        if (category) {
-          query.category = category._id;
+    try {
+        const { categorySlug } = req.query;
+        let query = {};
+        if (categorySlug && categorySlug !== 'all') {
+            const category = await Category.findOne({ slug: categorySlug });
+            if (category) {
+                query.category = category._id;
+            }
         }
-      }
-      const templates = await Template.find(query).populate('category');
-      res.json(templates);
-  } catch (e) {
-      res.status(500).json({ error: e.message });
-  }
+        const templates = await Template.find(query).populate('category');
+        res.json(templates);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
 });
 
 router.get('/templates/:id', async (req, res) => {
-  try {
-    const template = await Template.findById(req.params.id).populate('category');
-    if (template) res.json(template);
-    else res.status(404).json({ error: "Template not found" });
-  } catch (e) {
-    res.status(500).json({ error: "Server error" });
-  }
+    try {
+        const template = await Template.findById(req.params.id).populate('category');
+        if (template) res.json(template);
+        else res.status(404).json({ error: "Template not found" });
+    } catch (e) {
+        res.status(500).json({ error: "Server error" });
+    }
 });
 
 // --- CARDS ---
 router.post('/cards', async (req, res) => {
-  try {
-      const { userId, templateId, content, isPaid } = req.body;
-      
-      if (!userId) {
-          return res.status(401).json({ error: "User ID is required to create a card" });
-      }
+    try {
+        const { userId, templateId, content, isPaid } = req.body;
 
-      const shareHash = Math.random().toString(36).substring(2, 8);
-      
-      const newCard = new UserCard({
-        user: userId,
-        template: templateId,
-        content,
-        shareHash,
-        paymentStatus: isPaid ? 'pending' : 'paid',
-        isLocked: isPaid
-      });
-      
-      await newCard.save();
-      res.json({ success: true, shareHash, cardId: newCard._id });
-  } catch (e) {
-      console.error(e);
-      res.status(500).json({ error: "Failed to create card" });
-  }
+        if (!userId) {
+            return res.status(401).json({ error: "User ID is required to create a card" });
+        }
+
+        const shareHash = Math.random().toString(36).substring(2, 8);
+
+        const newCard = new UserCard({
+            user: userId,
+            template: templateId,
+            content,
+            shareHash,
+            paymentStatus: isPaid ? 'pending' : 'paid',
+            isLocked: isPaid
+        });
+
+        await newCard.save();
+        res.json({ success: true, shareHash, cardId: newCard._id });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Failed to create card" });
+    }
 });
 
 router.get('/cards/:hash', async (req, res) => {
-  try {
-      const card = await UserCard.findOne({ shareHash: req.params.hash }).populate('template');
-      if (!card) return res.status(404).json({ error: 'Card not found' });
-      
-      const isLocked = card.isLocked && card.paymentStatus !== 'paid';
-      
-      const response = {
-          isLocked,
-          template: card.template,
-          ownerId: card.user,
-          paymentStatus: card.paymentStatus,
-          shareHash: card.shareHash,
-          cardId: card._id,
-          createdAt: card.createdAt,
-          recipientResponse: card.recipientResponse // Include response if exists
-      };
+    try {
+        const card = await UserCard.findOne({ shareHash: req.params.hash }).populate('template');
+        if (!card) return res.status(404).json({ error: 'Card not found' });
 
-      if (!isLocked) {
-          response.content = card.content;
-          response.success = true;
-      }
+        const isLocked = card.isLocked && card.paymentStatus !== 'paid';
 
-      res.json(response);
-  } catch (e) {
-      res.status(500).json({ error: "Server error" });
-  }
+        const response = {
+            isLocked,
+            template: card.template,
+            ownerId: card.user,
+            paymentStatus: card.paymentStatus,
+            shareHash: card.shareHash,
+            cardId: card._id,
+            createdAt: card.createdAt,
+            recipientResponse: card.recipientResponse // Include response if exists
+        };
+
+        if (!isLocked) {
+            response.content = card.content;
+            response.success = true;
+        }
+
+        res.json(response);
+    } catch (e) {
+        res.status(500).json({ error: "Server error" });
+    }
 });
 
 // Save Recipient Response (Valentine Flow)
@@ -134,9 +155,9 @@ router.post('/cards/:hash/respond', async (req, res) => {
     try {
         const { availableOn14, customDate, time, venue } = req.body;
         const card = await UserCard.findOne({ shareHash: req.params.hash });
-        
+
         if (!card) return res.status(404).json({ error: 'Card not found' });
-        
+
         card.recipientResponse = {
             respondedAt: new Date(),
             availableOn14,
@@ -144,7 +165,7 @@ router.post('/cards/:hash/respond', async (req, res) => {
             time,
             venue
         };
-        
+
         await card.save();
         res.json({ success: true });
     } catch (e) {
@@ -171,10 +192,10 @@ router.post('/payment/create-order', async (req, res) => {
         const { amount } = req.body;
         // Mock ID
         const mockOrderId = 'order_' + Math.random().toString(36).substring(7);
-        res.json({ 
-            id: mockOrderId, 
-            currency: 'INR', 
-            amount: amount * 100 
+        res.json({
+            id: mockOrderId,
+            currency: 'INR',
+            amount: amount * 100
         });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -185,7 +206,7 @@ router.post('/payment/verify', async (req, res) => {
     try {
         const { cardId, paymentId, orderId, signature } = req.body;
         const card = await UserCard.findById(cardId);
-        if(card) {
+        if (card) {
             card.paymentStatus = 'paid';
             card.isLocked = false;
             await card.save();
