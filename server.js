@@ -22,6 +22,9 @@ app.use((req, res, next) => {
 // Routes
 app.use('/api', apiRoutes);
 
+app.get('/', (req, res) => {
+  res.send('ScrollWish API is running');
+});
 
 // Connect DB & Start
 mongoose.connect(MONGO_URI)
