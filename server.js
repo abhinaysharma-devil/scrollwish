@@ -23,7 +23,7 @@ app.use((req, res, next) => {
 app.use('/api', apiRoutes);
 
 app.get('/', (req, res) => {
-  res.send('ScrollWish API is running');
+  res.send('ScrollWish API is running ' + process.env.ENV + " mode ");
 });
 
 // Connect DB & Start
