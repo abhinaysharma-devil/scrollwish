@@ -20,6 +20,7 @@ export const Explore: React.FC = () => {
       setLoading(true);
       const categoryId = CATEGORIES.find(c => c.slug === currentCategorySlug)?.id;
       const data = await mockCards.getCards(categoryId);
+      console.log('data>>>', data)
       setCards(data);
       setLoading(false);
     };
