@@ -36,7 +36,9 @@ const UserCardSchema = new mongoose.Schema({
     availableOn14: { type: Boolean },
     customDate: { type: String },
     time: { type: String },
-    venue: { type: String }
+    venue: { type: String },
+    giftWants: { type: String },
+    giftDontWants: { type: String }
   },
   shareHash: { type: String, required: true, unique: true },
   password: { type: String },
