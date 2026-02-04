@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { mockCards, mockPayment } from '../services/mockService';
 import { User, RecipientResponse } from '../types';
 import { Button } from '../components/Button';
-import { Copy, ExternalLink, Check, CreditCard, MailOpen, UserCheck, Calendar, Clock, MapPin, X } from 'lucide-react';
+import { Copy, ExternalLink, Check, CreditCard, MailOpen, UserCheck, Calendar, Clock, MapPin, X, ThumbsUp, ThumbsDown, Gift } from 'lucide-react';
+import { Loader } from '../components/Loader';
 
 declare global {
     interface Window {
@@ -36,7 +37,7 @@ export const MyCards: React.FC<MyCardsProps> = ({ user }) => {
     }, [user]);
 
     const handleCopy = (hash: string) => {
-        const url = `${window.location.origin}/#/card/${hash}`;
+        const url = `${window.location.origin}/card/${hash}`;
         navigator.clipboard.writeText(url);
         setCopiedId(hash);
         setTimeout(() => setCopiedId(null), 2000);
@@ -106,7 +107,9 @@ export const MyCards: React.FC<MyCardsProps> = ({ user }) => {
                 <h1 className="text-3xl font-bold text-gray-900 mb-8">My Cards</h1>
 
                 {loading ? (
-                    <div className="text-center py-12">Loading...</div>
+                    <div className="py-12">
+                        <Loader text="Loading your collection..." />
+                    </div>
                 ) : cards.length === 0 ? (
                     <div className="bg-white rounded-2xl p-12 text-center shadow-sm">
                         <h2 className="text-xl font-semibold mb-4">You haven't created any cards yet</h2>
@@ -209,46 +212,67 @@ export const MyCards: React.FC<MyCardsProps> = ({ user }) => {
                             </button>
 
                             <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 text-rose-500">
-                                <UserCheck size={32} />
+                                {responseModalData.giftWants ? <Gift size={32}/> : <UserCheck size={32} />}
                             </div>
-                            <h2 className="text-2xl font-bold text-gray-900 mb-2">It's a Date!</h2>
-                            <p className="text-gray-500 text-sm mb-6">Here is the response from your valentine</p>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                                {responseModalData.giftWants ? 'Gift Wishes' : 'It\'s a Date!'}
+                            </h2>
+                            <p className="text-gray-500 text-sm mb-6">Here is the response from your friend</p>
                             
-                            <div className="bg-rose-50 p-6 rounded-xl border border-rose-100 my-6 text-left space-y-4">
-                                <div className="flex items-center gap-3 border-b border-rose-100 pb-3">
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${responseModalData.availableOn14 ? 'bg-green-500' : 'bg-rose-500'}`}>
-                                        {responseModalData.availableOn14 ? '✓' : 'X'}
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Accepted for 14th?</p>
-                                        <p className="font-medium text-gray-900">{responseModalData.availableOn14 ? 'Yes! 💖' : 'Proposed another date'}</p>
-                                    </div>
-                                </div>
-                                
-                                {responseModalData.customDate && (
-                                     <div className="flex items-center gap-3">
-                                        <Calendar size={18} className="text-rose-400" />
+                            <div className="bg-rose-50 p-6 rounded-xl border border-rose-100 my-6 text-left space-y-4 max-h-[60vh] overflow-y-auto">
+                                {/* Valentine Response */}
+                                {responseModalData.availableOn14 !== undefined && (
+                                    <>
+                                        <div className="flex items-center gap-3 border-b border-rose-100 pb-3">
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${responseModalData.availableOn14 ? 'bg-green-500' : 'bg-rose-500'}`}>
+                                                {responseModalData.availableOn14 ? '✓' : 'X'}
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Accepted for 14th?</p>
+                                                <p className="font-medium text-gray-900">{responseModalData.availableOn14 ? 'Yes! 💖' : 'Proposed another date'}</p>
+                                            </div>
+                                        </div>
+                                        
+                                        {responseModalData.customDate && (
+                                            <div className="flex items-center gap-3">
+                                                <Calendar size={18} className="text-rose-400" />
+                                                <div>
+                                                    <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Date</p>
+                                                    <p className="font-medium text-gray-900">{responseModalData.customDate}</p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="flex items-center gap-3">
+                                            <Clock size={18} className="text-rose-400" />
+                                            <div>
+                                                <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Time</p>
+                                                <p className="font-medium text-gray-900">{responseModalData.time || 'Not specified'}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <MapPin size={18} className="text-rose-400" />
+                                            <div>
+                                                <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Venue</p>
+                                                <p className="font-medium text-gray-900">{responseModalData.venue || 'Not specified'}</p>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+
+                                {/* Gift Response */}
+                                {responseModalData.giftWants && (
+                                    <div className="space-y-4 pt-2">
                                         <div>
-                                            <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Date</p>
-                                            <p className="font-medium text-gray-900">{responseModalData.customDate}</p>
+                                            <p className="text-xs font-bold text-teal-600 uppercase flex items-center gap-1 mb-1"><ThumbsUp size={12}/> Wants:</p>
+                                            <p className="text-sm text-gray-800 bg-white p-2 rounded border border-teal-100">{responseModalData.giftWants}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-bold text-red-500 uppercase flex items-center gap-1 mb-1"><ThumbsDown size={12}/> Doesn't Want:</p>
+                                            <p className="text-sm text-gray-800 bg-white p-2 rounded border border-red-100">{responseModalData.giftDontWants}</p>
                                         </div>
                                     </div>
                                 )}
-
-                                <div className="flex items-center gap-3">
-                                    <Clock size={18} className="text-rose-400" />
-                                    <div>
-                                        <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Time</p>
-                                        <p className="font-medium text-gray-900">{responseModalData.time || 'Not specified'}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <MapPin size={18} className="text-rose-400" />
-                                    <div>
-                                        <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Venue</p>
-                                        <p className="font-medium text-gray-900">{responseModalData.venue || 'Not specified'}</p>
-                                    </div>
-                                </div>
                             </div>
 
                             <Button onClick={() => setResponseModalData(null)} className="w-full">

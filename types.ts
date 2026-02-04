@@ -31,10 +31,12 @@ export interface CardContent {
 
 export interface RecipientResponse {
   respondedAt: string;
-  availableOn14: boolean;
+  availableOn14?: boolean;
   customDate?: string;
   time?: string;
   venue?: string;
+  giftWants?: string;
+  giftDontWants?: string;
 }
 
 export interface UserCard {

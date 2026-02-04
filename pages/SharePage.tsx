@@ -5,6 +5,7 @@ import { CardContent, User, RecipientResponse } from '../types';
 import { Button } from '../components/Button';
 import { Sparkles, Lock, Gift, User as UserIcon } from 'lucide-react';
 import { mockCards, mockPayment } from '../services/mockService';
+import { Loader } from '../components/Loader';
 
 declare global {
     interface Window {
@@ -124,9 +125,8 @@ export const SharePage: React.FC<SharePageProps> = ({ user, onLoginReq }) => {
 
   if (loading) {
       return (
-          <div className="h-screen w-full flex flex-col items-center justify-center bg-rose-50 gap-4">
-              <div className="w-16 h-16 border-4 border-rose-200 border-t-rose-500 rounded-full animate-spin"></div>
-              <p className="text-rose-500 font-medium animate-pulse">Opening your surprise...</p>
+          <div className="h-screen w-full bg-rose-50">
+             <Loader text="Opening your surprise..." />
           </div>
       )
   }
@@ -143,10 +143,10 @@ export const SharePage: React.FC<SharePageProps> = ({ user, onLoginReq }) => {
       );
   }
 
+  const isOwner = user && cardData && user.id === cardData.ownerId;
+
   // LOCKED STATE UI
   if (cardData.isLocked) {
-      const isOwner = user && user.id === cardData.ownerId;
-
       return (
           <div className="h-screen w-full flex flex-col items-center justify-center bg-gray-900 p-4 relative overflow-hidden">
               <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
@@ -204,15 +204,18 @@ export const SharePage: React.FC<SharePageProps> = ({ user, onLoginReq }) => {
             content={content!} 
             existingResponse={existingResponse}
             onSaveResponse={handleSaveResponse}
+            isOwner={!!isOwner}
         />
         {/* Floating CTA for viewer to create their own */}
-        <div className="fixed bottom-6 right-6 z-40">
-            <Link to="/">
-                <Button className="shadow-2xl animate-bounce">
-                    <Sparkles size={16} /> Create Your Own
-                </Button>
-            </Link>
-        </div>
+        {!isOwner && (
+            <div className="fixed bottom-6 right-6 z-40">
+                <Link to="/">
+                    <Button className="shadow-2xl animate-bounce">
+                        <Sparkles size={16} /> Create Your Own
+                    </Button>
+                </Link>
+            </div>
+        )}
     </>
   );
 };

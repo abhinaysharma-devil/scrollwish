@@ -6,6 +6,7 @@ import { CardViewer } from '../components/CardViewer';
 import { DEFAULT_CARD_CONTENT, SHAYARI_LIBRARY, THEME_CONFIG } from '../constants';
 import { CardContent, User } from '../types';
 import { mockCards, mockPayment } from '../services/mockService';
+import { Loader } from '../components/Loader';
 
 declare global {
     interface Window {
@@ -26,6 +27,7 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
     const [showPreviewModal, setShowPreviewModal] = useState(false);
     const [previewMode, setPreviewMode] = useState<'mobile' | 'desktop'>('mobile');
     const [saving, setSaving] = useState(false);
+    const [loadingTemplate, setLoadingTemplate] = useState(true);
     const [templateIsPaid, setTemplateIsPaid] = useState(false);
     const [currentTemplate, setCurrentTemplate] = useState<any>(null);
 
@@ -33,12 +35,11 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
         const loadTemplate = async () => {
              if (templateId) {
                  const t = await mockCards.getCardById(templateId);
-                 console.log('t>>>>>>>>>>', t)
                  if (t) {
                      setTemplateIsPaid(t.isPaid);
                      setCurrentTemplate(t);
                      
-                     const baseContent = { ...t, theme: t.themeColor as any, layout: t.layout };
+                     const baseContent = { ...DEFAULT_CARD_CONTENT, theme: t.themeColor as any, layout: t.layout };
 
                      if (t.layout === 'timeline') {
                          setContent({
@@ -66,6 +67,7 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                      }
                  }
              }
+             setLoadingTemplate(false);
         }
         loadTemplate();
     }, [templateId]);
@@ -157,6 +159,10 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
     const isTimelineLayout = content.layout === 'timeline';
     const isValentineLayout = content.layout === 'valentine';
 
+    if (loadingTemplate) {
+        return <Loader text="Setting up your studio..." fullScreen />;
+    }
+
     return (
         <div className="flex flex-col h-[calc(100vh-64px)] overflow-hidden bg-gray-100">
             {/* Toolbar Header */}
@@ -232,7 +238,7 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                             <input 
                                                 type="text" 
                                                 value={content.friendshipYears?.start || '2020'}
-                                                onChange={(e) => setContent({...content, friendshipYears: { ...(content.friendshipYears || { end: '2026' }), start: e.target.value }})}
+                                                onChange={(e) => setContent({...content, friendshipYears: { ...(content.friendshipYears || { end: '2024' }), start: e.target.value }})}
                                                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none" 
                                             />
                                         </div>
@@ -240,7 +246,7 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                             <label className="block text-sm font-medium text-gray-700 mb-2">End Year</label>
                                             <input 
                                                 type="text" 
-                                                value={content.friendshipYears?.end || '2026'}
+                                                value={content.friendshipYears?.end || '2024'}
                                                 onChange={(e) => setContent({...content, friendshipYears: { ...(content.friendshipYears || { start: '2020' }), end: e.target.value }})}
                                                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none" 
                                             />
