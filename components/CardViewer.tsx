@@ -309,7 +309,7 @@ const TimelineHeroSection = ({ content, minHeightClass, theme, bgPattern }: any)
         </section>
     );
 };
-
+ 
 const CyclicGallerySection = ({ content, minHeightClass }: any) => {
     const images = content.images || [];
     const [[page, direction], setPage] = useState([0, 0]);
