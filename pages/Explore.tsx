@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Search, Crown } from 'lucide-react';
 import { CATEGORIES, DEMO_TEMPLATES } from '../constants';
 import { CardTemplate } from '../types';
-import { mockCards } from '../services/mockService';
+import { category, mockCards } from '../services/mockService';
 import { Button } from '../components/Button';
 
 export const Explore: React.FC = () => {
@@ -19,6 +19,12 @@ export const Explore: React.FC = () => {
     const fetchCards = async () => {
       setLoading(true);
       const categoryId = CATEGORIES.find(c => c.slug === currentCategorySlug)?.id;
+
+        //  const categories = await category.getCategoryList();
+        //  console.log('categories>>>', categories)
+
+        //  categoryId
+
       const data = await mockCards.getCards(categoryId);
       console.log('data>>>', data)
       setCards(data);

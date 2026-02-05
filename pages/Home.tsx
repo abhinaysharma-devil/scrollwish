@@ -6,9 +6,9 @@ import { Button } from '../components/Button';
 import { CATEGORIES, DEMO_TEMPLATES } from '../constants';
 
 const HERO_IMAGES = [
-    "https://www.dropbox.com/scl/fi/wy1p4iayscp61gl6731c2/ameer-basheer-XP7QZpvbnKY-unsplash.jpg?rlkey=iq61472nb77jp4cfxdzbg78nz&st=dfqj2k54&raw=1",
-    // "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=800&q=80",
-    "https://www.dropbox.com/scl/fi/ob5p76116i1y7oa7oxxy6/priscilla-du-preez-xSAiIM6Wa2c-unsplash.jpg?rlkey=rjqlwnahmu9sqtdiy4xj5cvkl&st=rirjwf74&raw=1"
+    "https://storage.googleapis.com/global-bucket-for-devils-projects/scrollwish/morgan-lane-18N4okmWccM-unsplash.jpg",
+    "https://storage.googleapis.com/global-bucket-for-devils-projects/scrollwish/priscilla-du-preez-xSAiIM6Wa2c-unsplash%20(1).jpg",
+    "https://storage.googleapis.com/global-bucket-for-devils-projects/scrollwish/ameer-basheer-XP7QZpvbnKY-unsplash%205555555555.jpg"
 ];
 
 export const Home: React.FC = () => {

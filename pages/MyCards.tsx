@@ -7,6 +7,8 @@ import { Button } from '../components/Button';
 import { Copy, ExternalLink, Check, CreditCard, MailOpen, UserCheck, Calendar, Clock, MapPin, X, ThumbsUp, ThumbsDown, Gift } from 'lucide-react';
 import { Loader } from '../components/Loader';
 
+import { defineConfig, loadEnv } from 'vite';
+
 declare global {
     interface Window {
         Razorpay: any;
@@ -24,6 +26,8 @@ export const MyCards: React.FC<MyCardsProps> = ({ user }) => {
     const [payingId, setPayingId] = useState<string | null>(null);
     const [responseModalData, setResponseModalData] = useState<RecipientResponse | null>(null);
     const navigate = useNavigate();
+
+    // const env = loadEnv('', '.', import.meta.env.MODE);
 
     useEffect(() => {
         const fetch = async () => {
@@ -46,11 +50,11 @@ export const MyCards: React.FC<MyCardsProps> = ({ user }) => {
     const handlePay = async (card: any) => {
         if (!user) return;
         setPayingId(card._id);
-        
+
         try {
             const orderData = await mockPayment.createOrder(card.template.price || 99);
             const options = {
-                key: "YOUR_RAZORPAY_KEY_ID_HERE",
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID,
                 amount: orderData.amount,
                 currency: orderData.currency,
                 name: "ScrollWish",
@@ -63,7 +67,7 @@ export const MyCards: React.FC<MyCardsProps> = ({ user }) => {
                         orderId: response.razorpay_order_id,
                         signature: response.razorpay_signature
                     });
-                    
+
                     // Update local state
                     setCards(cards.map(c => c._id === card._id ? { ...c, paymentStatus: 'paid', isLocked: false } : c));
                     setPayingId(null);
@@ -120,9 +124,9 @@ export const MyCards: React.FC<MyCardsProps> = ({ user }) => {
                         {cards.map((card) => (
                             <div key={card._id} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex gap-4">
                                 <div className="w-24 h-32 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 relative">
-                                    <img 
-                                        src={card.template?.previewImage || 'https://via.placeholder.com/150'} 
-                                        alt="" 
+                                    <img
+                                        src={card.template?.previewImage || 'https://via.placeholder.com/150'}
+                                        alt=""
                                         className={`w-full h-full object-cover ${card.paymentStatus !== 'paid' ? 'grayscale opacity-70' : ''}`}
                                     />
                                     {card.paymentStatus !== 'paid' && (
@@ -143,38 +147,38 @@ export const MyCards: React.FC<MyCardsProps> = ({ user }) => {
                                             To: {card.content.recipientName} • {new Date(card.createdAt).toLocaleDateString()}
                                         </p>
                                     </div>
-                                    
+
                                     <div className="flex gap-2 mt-4 flex-wrap">
                                         {card.paymentStatus === 'paid' ? (
                                             <>
-                                                <button 
+                                                <button
                                                     onClick={() => handleCopy(card.shareHash)}
                                                     className="flex items-center gap-1 text-sm font-medium text-gray-600 hover:text-rose-600 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-rose-50 transition-colors"
                                                 >
                                                     {copiedId === card.shareHash ? <Check size={14} /> : <Copy size={14} />}
                                                     {copiedId === card.shareHash ? 'Copied' : 'Copy'}
                                                 </button>
-                                                <Link 
+                                                <Link
                                                     to={`/card/${card.shareHash}`}
                                                     className="flex items-center gap-1 text-sm font-medium text-rose-600 hover:text-rose-700 border border-rose-200 px-3 py-1.5 rounded-lg hover:bg-rose-50 transition-colors"
                                                 >
                                                     <ExternalLink size={14} /> View
                                                 </Link>
-                                                
+
                                                 {card.recipientResponse && (
-                                                    <Button 
+                                                    <Button
                                                         size="sm"
                                                         variant="secondary"
                                                         onClick={() => setResponseModalData(card.recipientResponse)}
                                                         className="px-3 py-1.5 text-sm h-auto bg-purple-50 text-purple-600 hover:bg-purple-100 border border-purple-100"
                                                     >
-                                                       💌 View Reply
+                                                        💌 View Reply
                                                     </Button>
                                                 )}
                                             </>
                                         ) : (
-                                            <Button 
-                                                size="sm" 
+                                            <Button
+                                                size="sm"
                                                 className="bg-green-600 hover:bg-green-700 w-full"
                                                 onClick={() => handlePay(card)}
                                                 isLoading={payingId === card._id}
@@ -194,14 +198,14 @@ export const MyCards: React.FC<MyCardsProps> = ({ user }) => {
             <AnimatePresence>
                 {responseModalData && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setResponseModalData(null)}
                             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
                         />
-                        <motion.div 
+                        <motion.div
                             initial={{ scale: 0.9, opacity: 0, y: 20 }}
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -212,13 +216,13 @@ export const MyCards: React.FC<MyCardsProps> = ({ user }) => {
                             </button>
 
                             <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 text-rose-500">
-                                {responseModalData.giftWants ? <Gift size={32}/> : <UserCheck size={32} />}
+                                {responseModalData.giftWants ? <Gift size={32} /> : <UserCheck size={32} />}
                             </div>
                             <h2 className="text-2xl font-bold text-gray-900 mb-2">
                                 {responseModalData.giftWants ? 'Gift Wishes' : 'It\'s a Date!'}
                             </h2>
                             <p className="text-gray-500 text-sm mb-6">Here is the response from your friend</p>
-                            
+
                             <div className="bg-rose-50 p-6 rounded-xl border border-rose-100 my-6 text-left space-y-4 max-h-[60vh] overflow-y-auto">
                                 {/* Valentine Response */}
                                 {responseModalData.availableOn14 !== undefined && (
@@ -232,7 +236,7 @@ export const MyCards: React.FC<MyCardsProps> = ({ user }) => {
                                                 <p className="font-medium text-gray-900">{responseModalData.availableOn14 ? 'Yes! 💖' : 'Proposed another date'}</p>
                                             </div>
                                         </div>
-                                        
+
                                         {responseModalData.customDate && (
                                             <div className="flex items-center gap-3">
                                                 <Calendar size={18} className="text-rose-400" />
@@ -264,11 +268,11 @@ export const MyCards: React.FC<MyCardsProps> = ({ user }) => {
                                 {responseModalData.giftWants && (
                                     <div className="space-y-4 pt-2">
                                         <div>
-                                            <p className="text-xs font-bold text-teal-600 uppercase flex items-center gap-1 mb-1"><ThumbsUp size={12}/> Wants:</p>
+                                            <p className="text-xs font-bold text-teal-600 uppercase flex items-center gap-1 mb-1"><ThumbsUp size={12} /> Wants:</p>
                                             <p className="text-sm text-gray-800 bg-white p-2 rounded border border-teal-100">{responseModalData.giftWants}</p>
                                         </div>
                                         <div>
-                                            <p className="text-xs font-bold text-red-500 uppercase flex items-center gap-1 mb-1"><ThumbsDown size={12}/> Doesn't Want:</p>
+                                            <p className="text-xs font-bold text-red-500 uppercase flex items-center gap-1 mb-1"><ThumbsDown size={12} /> Doesn't Want:</p>
                                             <p className="text-sm text-gray-800 bg-white p-2 rounded border border-red-100">{responseModalData.giftDontWants}</p>
                                         </div>
                                     </div>

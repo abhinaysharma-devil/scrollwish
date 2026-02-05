@@ -25,7 +25,7 @@ export const DEMO_TEMPLATES: CardTemplate[] = [
     title: 'Valentine Proposal',
     categoryId: '2',
     previewImage: 'https://www.dropbox.com/scl/fi/ob5p76116i1y7oa7oxxy6/priscilla-du-preez-xSAiIM6Wa2c-unsplash.jpg?rlkey=rjqlwnahmu9sqtdiy4xj5cvkl&st=rirjwf74&raw=1',
-    isPaid: false,
+    isPaid: true,
     price: 25,
     themeColor: 'rose',
     layout: 'valentine'
