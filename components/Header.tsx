@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, User as UserIcon, Menu, FolderHeart, LogOut } from 'lucide-react';
 import { Button } from './Button';
+import logo from '../assets/image.png';
 import { User } from '../types';
 
 interface HeaderProps {
@@ -31,8 +32,7 @@ export const Header: React.FC<HeaderProps> = ({ onLoginClick, onLogoutClick, use
         <div className="flex justify-between h-16 items-center">
           <Link to="/" className="flex items-center gap-2 group">
             {/* <div className="p-2 bg-rose-500 rounded-xl text-white group-hover:rotate-12 transition-transform"> */}
-              {/* <Sparkles size={20} /> */}
-            <img src="../assets/image.png" alt="ScrollWish Logo" className="h-8 w-11 rounded-full group-hover:scale-110 transition-transform duration-300" />
+            <img src={logo} alt="ScrollWish Logo" className="h-8 w-11 rounded-full group-hover:scale-110 transition-transform duration-300" />
 
             {/* </div> */}
             <span className="font-bold text-2xl bg-gradient-to-r from-rose-500 to-purple-600 bg-clip-text text-transparent">
