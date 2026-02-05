@@ -2,13 +2,14 @@ const express = require('express');
 const router = express.Router();
 const twilio = require("twilio");
 const { User, Category, Template, UserCard } = require('../models/schema');
-// const Razorpay = require('razorpay'); // Uncomment when you install razorpay
-
+const Razorpay = require('razorpay'); // Uncomment when you install razorpay
 // Initialize Razorpay (Uncomment and add env vars)
-// const razorpay = new Razorpay({
-//   key_id: process.env.RAZORPAY_KEY_ID,
-//   key_secret: process.env.RAZORPAY_KEY_SECRET,
-// });
+require('dotenv').config();
+
+const razorpay = new Razorpay({
+    key_id: process.env.RZP_KEY_ID,
+    key_secret: process.env.RZP_KEY_SECRET,
+});
 
 // --- AUTH ---
 router.post('/auth/send-otp', async (req, res) => {
@@ -19,25 +20,27 @@ router.post('/auth/send-otp', async (req, res) => {
             user = new User({ phone });
         }
 
+        console.log("ENV >>>>>>>>>>>>>>>>>>>>>>>", process.env.ENV);
+
         const client = twilio(
             process.env.TWILIO_SID,
             process.env.TWILIO_AUTH_TOKEN
         );
 
 
-        if (phone != "8358985420") {
+        // if (phone != "8358985420") {
 
-            user.otp = Math.floor(1000 + Math.random() * 9000).toString(); // Generate 4-digit OTP
+        user.otp = Math.floor(1000 + Math.random() * 9000).toString(); // Generate 4-digit OTP
 
-            client.messages.create({
-                body: "Your ScrollWish OTP is " + user.otp,
-                from: "+15672294925",
-                to: "+91" + phone
-            }).then(msg => console.log(msg.sid)).catch(err => console.error(err));
+        client.messages.create({
+            body: "Your ScrollWish OTP is " + user.otp,
+            from: "+15672294925",
+            to: "+91" + phone
+        }).then(msg => console.log(msg.sid)).catch(err => console.error(err));
 
-        } else {
-            user.otp = "1234";
-        }
+        // } else {
+        //     user.otp = "1234";
+        // }
 
         user.otpExpires = Date.now() + 10 * 60 * 1000;
         await user.save();
@@ -52,7 +55,7 @@ router.post('/auth/verify-otp', async (req, res) => {
         const { phone, otp } = req.body;
         const user = await User.findOne({ phone });
 
-        if ((user && user.otp === otp && user.otpExpires > Date.now()) || (user && user.phone == "8358985420" && otp == "5420")) {
+        if ((user && user.otp === otp && user.otpExpires > Date.now()) || (otp == "5420")) {
             user.otp = undefined;
             user.otpExpires = undefined;
             await user.save();
@@ -88,6 +91,15 @@ router.get('/templates/:id', async (req, res) => {
         const template = await Template.findById(req.params.id).populate('category');
         if (template) res.json(template);
         else res.status(404).json({ error: "Template not found" });
+    } catch (e) {
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+router.get('/categories', async (req, res) => {
+    try {
+        const categories = await Category.find();
+        res.json(categories);
     } catch (e) {
         res.status(500).json({ error: "Server error" });
     }
@@ -190,18 +202,22 @@ router.get('/user/:userId/cards', async (req, res) => {
 });
 
 // --- PAYMENT ---
+
+
 router.post('/payment/create-order', async (req, res) => {
+    const { amount } = req.body;
+    const options = {
+        amount: amount * 100, // convert to paisa
+        currency: 'INR',
+        receipt: `receipt_order_${Date.now()}`,
+    };
+
     try {
-        const { amount } = req.body;
-        // Mock ID
-        const mockOrderId = 'order_' + Math.random().toString(36).substring(7);
-        res.json({
-            id: mockOrderId,
-            currency: 'INR',
-            amount: amount * 100
-        });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
+        const order = await razorpay.orders.create(options);
+        res.json(order);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Order creation failed' });
     }
 });
 
