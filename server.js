@@ -35,7 +35,7 @@ app.get("/task", (req, res) => {
   }, 1000);
 });
 
-process.on("SIGTERM", () => {
+process.on("SIGTERM", () => { 
   console.log("⚠️ SIGTERM received! Container shutting down...");
   process.exit(0);
 });
