@@ -15,24 +15,16 @@ const razorpay = new Razorpay({
 router.get('/longblock', async (req, res) => {
     try {
 
-        console.log("Simulating long block..."); 
+        console.log("🚀 Task started...");
 
-        await new Promise(resolve => setTimeout(() => {
-            console.log("Long block finished");
+        // Simulate long background work (30 sec)
+        for (let i = 1; i <= 30; i++) {
+            console.log(`⏳ Processing step ${i}/30`);
+            await new Promise((resolve) => setTimeout(resolve,6 * 1000));
+        }
 
-            resolve();
-        }, 60 * 3 * 1000));
-
-
-        // for (let i = 0; i < 1e9; i++) {
-        //     // Simulating CPU intensive task
-        //    if (i % 1e6 === 0) console.log("Processing...", i);
-        // }
-
-
-        res.json({
-            title: "Good to go",
-        });
+        console.log("✅ Task completed!");
+        res.send("Task done!");
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
