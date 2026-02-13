@@ -30,7 +30,7 @@ app.get("/task", (req, res) => {
     i++;
 
     if (i % 5 == 0) console.log(`🔥 Background step ${i}`);
-
+ 
     if (i == 150) clearInterval(interval);
   }, 1000);
 });
