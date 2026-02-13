@@ -21,7 +21,13 @@ router.get('/longblock', async (req, res) => {
             console.log("Long block finished");
 
             resolve();
-        }, 60 * 1000));
+        }, 60 * 3 * 1000));
+
+
+        // for (let i = 0; i < 1e9; i++) {
+        //     // Simulating CPU intensive task
+        //    if (i % 1e6 === 0) console.log("Processing...", i);
+        // }
 
 
         res.json({
