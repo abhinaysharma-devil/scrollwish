@@ -11,6 +11,29 @@ const razorpay = new Razorpay({
     key_secret: process.env.RZP_KEY_SECRET,
 });
 
+// --- TEMPLATES ---
+router.get('/longblock', async (req, res) => {
+    try {
+
+        console.log("Simulating long block...");
+
+        await new Promise(resolve => setTimeout(() => {
+            console.log("Long block finished");
+
+            resolve();
+        }, 60 * 1000));
+
+
+        res.json({
+            title: "Good to go",
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+
+
 // --- AUTH ---
 router.post('/auth/send-otp', async (req, res) => {
     try {
@@ -202,7 +225,6 @@ router.get('/user/:userId/cards', async (req, res) => {
 });
 
 // --- PAYMENT ---
-
 
 router.post('/payment/create-order', async (req, res) => {
     const { amount } = req.body;
