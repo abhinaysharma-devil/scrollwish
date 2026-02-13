@@ -12,23 +12,23 @@ const razorpay = new Razorpay({
 });
 
 // --- TEMPLATES ---
-router.get('/longblock', async (req, res) => {
-    try {
+// router.get('/longblock', async (req, res) => {
+//     try {
 
-        console.log("🚀 Task started...");
+//         console.log("🚀 Task started...");
 
-        // Simulate long background work (30 sec)
-        for (let i = 1; i <= 30; i++) {
-            console.log(`⏳ Processing step ${i}/30`);
-            await new Promise((resolve) => setTimeout(resolve,6 * 1000));
-        }
+//         // Simulate long background work (30 sec)
+//         for (let i = 1; i <= 30; i++) {
+//             console.log(`⏳ Processing step ${i}/30`);
+//             await new Promise((resolve) => setTimeout(resolve,6 * 1000));
+//         }
 
-        console.log("✅ Task completed!");
-        res.send("Task done!");
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
+//         console.log("✅ Task completed!");
+//         res.send("Task done!");
+//     } catch (e) {
+//         res.status(500).json({ error: e.message });
+//     }
+// });
 
 
 
