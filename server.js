@@ -19,6 +19,27 @@ app.use((req, res, next) => {
   next();
 });
 
+
+app.get("/task", (req, res) => {
+  console.log("🚀 Request received");
+
+  res.send("Started background work...");
+
+  let i = 0;
+  const interval = setInterval(() => {
+    i++;
+
+    if (i % 5 == 0) console.log(`🔥 Background step ${i}`);
+
+    if (i === 100) clearInterval(interval);
+  }, 1000);
+});
+
+process.on("SIGTERM", () => {
+  console.log("⚠️ SIGTERM received! Container shutting down...");
+  process.exit(0);
+});
+
 // Routes
 app.use('/api', apiRoutes);
 
