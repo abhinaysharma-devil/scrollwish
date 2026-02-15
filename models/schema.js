@@ -1,10 +1,12 @@
+
 const mongoose = require('mongoose');
 
 // User Schema
 const UserSchema = new mongoose.Schema({
   phone: { type: String, required: true, unique: true },
-  otp: { type: String }, // In prod, store hashed or use transient store like Redis
+  otp: { type: String }, 
   otpExpires: { type: Date },
+  isAdmin: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -23,7 +25,9 @@ const TemplateSchema = new mongoose.Schema({
   isPaid: { type: Boolean, default: false },
   price: { type: Number, default: 0 },
   themeColor: { type: String },
-  layout: { type: String, enum: ['default', 'timeline', 'valentine'], default: 'default' }
+  layout: { type: String, enum: ['default', 'timeline', 'valentine', 'wedding'], default: 'default' },
+  renderFunction: { type: String, default: 'DefaultViewer' }, // New field for dynamic rendering
+  isVisible: { type: Boolean, default: true }
 });
 
 // UserCard Schema (Created Cards)
@@ -41,7 +45,6 @@ const UserCardSchema = new mongoose.Schema({
     giftDontWants: { type: String }
   },
   shareHash: { type: String, required: true, unique: true },
-  password: { type: String },
   isLocked: { type: Boolean, default: false },
   paymentStatus: { type: String, enum: ['pending', 'paid'], default: 'pending' },
   createdAt: { type: Date, default: Date.now }

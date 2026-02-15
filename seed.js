@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 const { Category, Template } = require('./models/schema');
 
@@ -20,7 +21,8 @@ const templates = [
     isPaid: true,
     price: 299,
     themeColor: 'rose',
-    layout: 'valentine'
+    layout: 'valentine',
+    renderFunction: 'ValentineViewer'
   },
   {
     title: 'Friendship Journey',
@@ -29,7 +31,8 @@ const templates = [
     isPaid: true,
     price: 199,
     themeColor: 'friendship',
-    layout: 'timeline'
+    layout: 'timeline',
+    renderFunction: 'FriendshipTimelineViewer'
   },
   {
     title: 'Floral Birthday',
@@ -37,7 +40,8 @@ const templates = [
     previewImage: 'https://picsum.photos/id/40/400/600',
     isPaid: false,
     themeColor: 'rose',
-    layout: 'default'
+    layout: 'default',
+    renderFunction: 'DefaultViewer'
   },
   {
     title: 'Neon Party',
@@ -46,7 +50,19 @@ const templates = [
     isPaid: true,
     price: 99,
     themeColor: 'ocean',
-    layout: 'default'
+    layout: 'default',
+    renderFunction: 'DefaultViewer'
+  },
+  // WEDDING TEMPLATE
+  {
+    title: 'Royal Wedding Invite',
+    catSlug: 'wedding',
+    previewImage: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    isPaid: true,
+    price: 499,
+    themeColor: 'gold',
+    layout: 'wedding',
+    renderFunction: 'WeddingViewer'
   }
 ];
 
@@ -73,7 +89,9 @@ const seedDB = async () => {
         isPaid: t.isPaid,
         price: t.price,
         themeColor: t.themeColor,
-        layout: t.layout
+        layout: t.layout,
+        renderFunction: t.renderFunction,
+        isVisible: true
       };
     });
 

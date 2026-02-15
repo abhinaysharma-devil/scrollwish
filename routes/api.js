@@ -1,3 +1,4 @@
+
 const express = require('express');
 const router = express.Router();
 const twilio = require("twilio");
@@ -82,18 +83,29 @@ router.post('/auth/send-otp', async (req, res) => {
 });
 
 router.post('/auth/verify-otp', async (req, res) => {
-    try {
-        const { phone, otp } = req.body;
-        const user = await User.findOne({ phone });
+  try {
+      const { phone, otp } = req.body;
+      const user = await User.findOne({ phone });
+      
+      if (user && user.otp === otp && user.otpExpires > Date.now()) {
+        user.otp = undefined;
+        user.otpExpires = undefined;
+        await user.save();
+        res.json({ success: true, user: { id: user._id, phone: user.phone, isAdmin: user.isAdmin } });
+      } else {
+        res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+      }
+  } catch (e) {
+      res.status(500).json({ error: e.message });
+  }
+});
 
-        if ((user && user.otp === otp && user.otpExpires > Date.now()) || (otp == "5420")) {
-            user.otp = undefined;
-            user.otpExpires = undefined;
-            await user.save();
-            res.json({ success: true, user: { id: user._id, phone: user.phone } });
-        } else {
-            res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
-        }
+// --- CATEGORIES ---
+router.get('/categories', async (req, res) => {
+    try {
+        const categories = await Category.find({});
+        const formatted = categories.map(c => ({ id: c._id, name: c.name, slug: c.slug, icon: c.icon }));
+        res.json(formatted);
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
@@ -101,106 +113,127 @@ router.post('/auth/verify-otp', async (req, res) => {
 
 // --- TEMPLATES ---
 router.get('/templates', async (req, res) => {
-    try {
-        const { categorySlug } = req.query;
-        let query = {};
-        if (categorySlug && categorySlug !== 'all') {
-            const category = await Category.findOne({ slug: categorySlug });
-            if (category) {
-                query.category = category._id;
-            }
+  try {
+      const { categorySlug } = req.query;
+      // Admin sees all, regular request sees visible only. Simplified here for demo.
+      let query = {}; 
+      
+      if (categorySlug && categorySlug !== 'all') {
+        const category = await Category.findOne({ slug: categorySlug });
+        if (category) {
+          query.category = category._id;
+          query.isVisible = true; // Regular users only see visible
         }
-        const templates = await Template.find(query).populate('category');
-        res.json(templates);
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
+      }
+      
+      const templates = await Template.find(query).populate('category');
+      const formatted = templates.map(t => ({
+          id: t._id,
+          title: t.title,
+          categoryId: t.category?._id,
+          category: t.category,
+          previewImage: t.previewImage,
+          isPaid: t.isPaid,
+          price: t.price,
+          themeColor: t.themeColor,
+          layout: t.layout,
+          renderFunction: t.renderFunction,
+          isVisible: t.isVisible
+      }));
+      res.json(formatted);
+  } catch (e) {
+      res.status(500).json({ error: e.message });
+  }
 });
 
 router.get('/templates/:id', async (req, res) => {
-    try {
-        const template = await Template.findById(req.params.id).populate('category');
-        if (template) res.json(template);
-        else res.status(404).json({ error: "Template not found" });
-    } catch (e) {
-        res.status(500).json({ error: "Server error" });
+  try {
+    const template = await Template.findById(req.params.id).populate('category');
+    if (template) {
+        res.json({
+          id: template._id,
+          title: template.title,
+          categoryId: template.category?._id,
+          previewImage: template.previewImage,
+          isPaid: template.isPaid,
+          price: template.price,
+          themeColor: template.themeColor,
+          layout: template.layout,
+          renderFunction: template.renderFunction,
+          isVisible: template.isVisible
+        });
+    } else {
+        res.status(404).json({ error: "Template not found" });
     }
-});
-
-router.get('/categories', async (req, res) => {
-    try {
-        const categories = await Category.find();
-        res.json(categories);
-    } catch (e) {
-        res.status(500).json({ error: "Server error" });
-    }
+  } catch (e) {
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
 // --- CARDS ---
 router.post('/cards', async (req, res) => {
-    try {
-        const { userId, templateId, content, isPaid } = req.body;
+  try {
+      const { userId, templateId, content, isPaid } = req.body;
+      
+      if (!userId) {
+          return res.status(401).json({ error: "User ID is required to create a card" });
+      }
 
-        if (!userId) {
-            return res.status(401).json({ error: "User ID is required to create a card" });
-        }
-
-        const shareHash = Math.random().toString(36).substring(2, 8);
-
-        const newCard = new UserCard({
-            user: userId,
-            template: templateId,
-            content,
-            shareHash,
-            paymentStatus: isPaid ? 'pending' : 'paid',
-            isLocked: isPaid
-        });
-
-        await newCard.save();
-        res.json({ success: true, shareHash, cardId: newCard._id });
-    } catch (e) {
-        console.error(e);
-        res.status(500).json({ error: "Failed to create card" });
-    }
+      const shareHash = Math.random().toString(36).substring(2, 8);
+      
+      const newCard = new UserCard({
+        user: userId,
+        template: templateId,
+        content,
+        shareHash,
+        paymentStatus: isPaid ? 'pending' : 'paid',
+        isLocked: isPaid
+      });
+      
+      await newCard.save();
+      res.json({ success: true, shareHash, cardId: newCard._id });
+  } catch (e) {
+      console.error(e);
+      res.status(500).json({ error: "Failed to create card" });
+  }
 });
 
 router.get('/cards/:hash', async (req, res) => {
-    try {
-        const card = await UserCard.findOne({ shareHash: req.params.hash }).populate('template');
-        if (!card) return res.status(404).json({ error: 'Card not found' });
+  try {
+      const card = await UserCard.findOne({ shareHash: req.params.hash }).populate('template');
+      if (!card) return res.status(404).json({ error: 'Card not found' });
+      
+      const isLocked = card.isLocked && card.paymentStatus !== 'paid';
+      
+      const response = {
+          isLocked,
+          template: card.template,
+          ownerId: card.user,
+          paymentStatus: card.paymentStatus,
+          shareHash: card.shareHash,
+          cardId: card._id,
+          createdAt: card.createdAt,
+          recipientResponse: card.recipientResponse 
+      };
 
-        const isLocked = card.isLocked && card.paymentStatus !== 'paid';
+      if (!isLocked) {
+          response.content = card.content;
+          response.success = true;
+      }
 
-        const response = {
-            isLocked,
-            template: card.template,
-            ownerId: card.user,
-            paymentStatus: card.paymentStatus,
-            shareHash: card.shareHash,
-            cardId: card._id,
-            createdAt: card.createdAt,
-            recipientResponse: card.recipientResponse // Include response if exists
-        };
-
-        if (!isLocked) {
-            response.content = card.content;
-            response.success = true;
-        }
-
-        res.json(response);
-    } catch (e) {
-        res.status(500).json({ error: "Server error" });
-    }
+      res.json(response);
+  } catch (e) {
+      res.status(500).json({ error: "Server error" });
+  }
 });
 
-// Save Recipient Response (Valentine Flow)
 router.post('/cards/:hash/respond', async (req, res) => {
     try {
         const { availableOn14, customDate, time, venue, giftWants, giftDontWants } = req.body;
         const card = await UserCard.findOne({ shareHash: req.params.hash });
-
+        
         if (!card) return res.status(404).json({ error: 'Card not found' });
-
+        
         card.recipientResponse = {
             respondedAt: new Date(),
             availableOn14,
@@ -210,7 +243,7 @@ router.post('/cards/:hash/respond', async (req, res) => {
             giftWants,
             giftDontWants
         };
-
+        
         await card.save();
         res.json({ success: true });
     } catch (e) {
@@ -219,8 +252,6 @@ router.post('/cards/:hash/respond', async (req, res) => {
     }
 });
 
-
-// Get Cards for a specific User
 router.get('/user/:userId/cards', async (req, res) => {
     try {
         const cards = await UserCard.find({ user: req.params.userId })
@@ -263,6 +294,116 @@ router.post('/payment/verify', async (req, res) => {
         } else {
             res.status(404).json({ success: false });
         }
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// --- ADMIN ROUTES ---
+
+// Get All Cards (Admin)
+router.get('/admin/cards', async (req, res) => {
+    try {
+        const cards = await UserCard.find({})
+            .populate('user', 'phone')
+            .populate('template', 'title')
+            .sort({ createdAt: -1 });
+        res.json(cards);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Update Card Status
+router.patch('/admin/cards/:id', async (req, res) => {
+    try {
+        const { status } = req.body;
+        const card = await UserCard.findById(req.params.id);
+        if (card) {
+            card.paymentStatus = status;
+            card.isLocked = status !== 'paid';
+            await card.save();
+            res.json({ success: true });
+        } else {
+            res.status(404).json({ error: "Card not found" });
+        }
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Create Category
+router.post('/admin/categories', async (req, res) => {
+    try {
+        const category = new Category(req.body);
+        await category.save();
+        res.json(category);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Update Category
+router.put('/admin/categories/:id', async (req, res) => {
+    try {
+        const category = await Category.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        res.json(category);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Delete Category
+router.delete('/admin/categories/:id', async (req, res) => {
+    try {
+        await Category.findByIdAndDelete(req.params.id);
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Create Template
+router.post('/admin/templates', async (req, res) => {
+    try {
+        const data = req.body;
+        if(data.categoryId) data.category = data.categoryId; // Map ID
+        const template = new Template(data);
+        await template.save();
+        res.json(template);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Update Template
+router.put('/admin/templates/:id', async (req, res) => {
+    try {
+        const data = req.body;
+        if(data.categoryId) data.category = data.categoryId; // Map ID
+        const template = await Template.findByIdAndUpdate(req.params.id, data, { new: true });
+        res.json(template);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Delete Template
+router.delete('/admin/templates/:id', async (req, res) => {
+    try {
+        await Template.findByIdAndDelete(req.params.id);
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// Toggle Template Visibility
+router.patch('/admin/templates/:id', async (req, res) => {
+    try {
+        const { isVisible } = req.body;
+        const template = await Template.findByIdAndUpdate(req.params.id, { isVisible }, { new: true });
+        res.json(template);
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
