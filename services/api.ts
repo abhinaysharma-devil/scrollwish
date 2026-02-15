@@ -2,8 +2,8 @@
 import { CardContent, CardTemplate, Category, User, UserCard } from '../types';
 import { CATEGORIES, DEMO_TEMPLATES, DEFAULT_CARD_CONTENT } from '../constants';
 
-const API_URL = 'http://localhost:5000/api';
-
+// const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://scrollwish-api-155830263049.asia-south1.run.app/api';
 // Helper to handle response with fallback
 const request = async <T>(endpoint: string, options?: RequestInit, fallback?: T): Promise<T> => {
     try {

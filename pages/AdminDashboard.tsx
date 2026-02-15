@@ -86,7 +86,7 @@ export const AdminDashboard: React.FC = () => {
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
-        if (password === 'admin123') setIsAuthenticated(true);
+        if (password === 'devil456') setIsAuthenticated(true);
         else alert('Wrong Password');
     };
 

@@ -102,8 +102,8 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                  venueAddress: 'Delhi, India',
                                  invitationNote: 'We invite you to share in our joy as we begin our new life together.',
                                  images: [
+                                     "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2F1771175510496_Screenshot%202026-02-15%20224120.png?alt=media&token=2aa96c29-417e-48fd-bbaa-2eea28437bc2",  // Default Bride
                                      "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2F1771175501040_Screenshot%202026-02-15%20224016.png?alt=media&token=b7194371-8f43-40db-91d9-3be9a4f71f4c", // Default Groom
-                                     "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2F1771175510496_Screenshot%202026-02-15%20224120.png?alt=media&token=2aa96c29-417e-48fd-bbaa-2eea28437bc2"  // Default Bride
                                  ]
                              });
                          } else {
