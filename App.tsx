@@ -8,6 +8,7 @@ import { Explore } from './pages/Explore';
 import { Editor } from './pages/Editor';
 import { SharePage } from './pages/SharePage';
 import { MyCards } from './pages/MyCards';
+import { AdminDashboard } from './pages/AdminDashboard';
 import { Legal } from './pages/Legal';
 import { LoginModal } from './components/LoginModal';
 import { User } from './types';
@@ -21,7 +22,7 @@ const Layout: React.FC<{
 }> = ({ children, onLogin, onLogout, user }) => {
   const location = useLocation();
   // Don't show header/footer on Share page or Editor (editor has its own)
-  const isImmersive = location.pathname.includes('/card/') || location.pathname.includes('/editor');
+  const isImmersive = location.pathname.includes('/card/') || location.pathname.includes('/editor') || location.pathname.includes('/admin');
 
   return (
     <>
@@ -74,6 +75,7 @@ export default function App() {
           <Route path="/editor/:templateId" element={<Editor user={user} onLoginReq={() => setIsLoginOpen(true)} />} />
           <Route path="/card/:hash" element={<SharePage user={user} onLoginReq={() => setIsLoginOpen(true)} />} />
           <Route path="/my-cards" element={<MyCards user={user} />} />
+          <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/terms" element={<Legal />} />
           <Route path="/privacy" element={<Legal />} />
           <Route path="/contact" element={<Legal />} />

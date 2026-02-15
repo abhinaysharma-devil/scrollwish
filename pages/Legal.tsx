@@ -36,7 +36,7 @@ export const Legal: React.FC = () => {
         <div className="prose max-w-none">
             <p>Have questions? Reach out to us!</p>
             <div className="bg-rose-50 p-6 rounded-xl border border-rose-100 not-prose">
-                <p className="font-bold text-lg mb-2">Abhinay Panchal</p>
+                <p className="font-bold text-lg mb-2">Abhinay Sharma</p>
                 <p className="mb-1">📧 Email: <a href="mailto:panchalabhinay@gmail.com" className="text-rose-600 hover:underline">panchalabhinay@gmail.com</a></p>
                 <p>📱 Mobile: +91 9936362455</p>
             </div>

@@ -86,7 +86,7 @@ export const DEMO_TEMPLATES: CardTemplate[] = [
 
 export const DEFAULT_CARD_CONTENT: CardContent = {
   title: "Happy Birthday!",
-  recipientName: "Saloni",
+  recipientName: "Rose",
   message: "Wishing you a day filled with happiness and a year filled with joy. Happy Birthday!",
   shayari: "May your day be filled with the same joy you bring to others.",
   images: [
@@ -94,7 +94,7 @@ export const DEFAULT_CARD_CONTENT: CardContent = {
     "https://picsum.photos/id/1015/800/600",
     "https://picsum.photos/id/1019/800/600"
   ],
-  senderName: "Abhinay",
+  senderName: "Max",
   theme: 'rose',
   layout: 'default'
 };
@@ -136,3 +136,6 @@ export const THEME_CONFIG = {
     pattern: 'opacity-10 bg-[url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png")]' // WhatsApp Doodle pattern URL
   }
 };
+
+export const TEMPLATE_UPLOAD_PATH = '/scrollwish/card-templates';
+export const PUBLIC_UPLOAD_PATH = '/scrollwish';

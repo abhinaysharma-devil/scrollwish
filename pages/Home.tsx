@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, Heart, Play } from 'lucide-react';
 import { Button } from '../components/Button';
-import { CATEGORIES, DEMO_TEMPLATES } from '../constants';
+import { api } from '../services/api';
+import { CardTemplate, Category } from '../types';
 
 const HERO_IMAGES = [
     "https://storage.googleapis.com/global-bucket-for-devils-projects/scrollwish/morgan-lane-18N4okmWccM-unsplash.jpg",
@@ -13,11 +15,25 @@ const HERO_IMAGES = [
 
 export const Home: React.FC = () => {
   const [activeHeroIndex, setActiveHeroIndex] = useState(0);
+  const [trendingTemplates, setTrendingTemplates] = useState<CardTemplate[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
       const interval = setInterval(() => {
           setActiveHeroIndex((prev) => (prev + 1) % HERO_IMAGES.length);
       }, 3000);
+
+      // Fetch dynamic data
+      const fetchData = async () => {
+          try {
+            const t = await api.getTemplates('all');
+            const c = await api.getCategories();
+            setTrendingTemplates(t.slice(0, 3));
+            setCategories(c);
+          } catch(e) { console.error(e) }
+      };
+      fetchData();
+
       return () => clearInterval(interval);
   }, []);
 
@@ -114,8 +130,8 @@ export const Home: React.FC = () => {
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-                {CATEGORIES.map((cat, idx) => (
-                    <Link to={`/explore?cat=${cat.slug}`} key={cat.id}>
+                {categories.map((cat, idx) => (
+                    <Link to={`/explore?cat=${cat.slug}`} key={cat.id || idx}>
                         <motion.div 
                             whileHover={{ y: -5 }}
                             className="bg-slate-50 hover:bg-rose-50 rounded-2xl p-6 text-center cursor-pointer transition-colors group border border-slate-100 hover:border-rose-100"
@@ -143,8 +159,8 @@ export const Home: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {DEMO_TEMPLATES.slice(0, 3).map((template) => (
-                     <Link to={`/explore`} key={template.id} className="group">
+                {trendingTemplates.map((template) => (
+                     <Link to={`/editor/${template.id}`} key={template.id} className="group">
                         <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100">
                             <div className="aspect-[4/5] overflow-hidden relative">
                                 <img src={template.previewImage} alt={template.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -156,7 +172,7 @@ export const Home: React.FC = () => {
                             </div>
                             <div className="p-6">
                                 <h3 className="font-bold text-lg text-slate-900 mb-1">{template.title}</h3>
-                                <p className="text-sm text-slate-500 mb-4">{CATEGORIES.find(c => c.id === template.categoryId)?.name}</p>
+                                <p className="text-sm text-slate-500 mb-4">{template.category?.name || 'Various'}</p>
                                 <span className="text-rose-500 font-medium text-sm group-hover:underline">Customize this card &rarr;</span>
                             </div>
                         </div>

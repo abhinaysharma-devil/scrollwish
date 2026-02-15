@@ -1,9 +1,11 @@
+
 import React, { useRef, useEffect, useState } from 'react';
-import { motion, useScroll, useTransform, useSpring, useInView, AnimatePresence, wrap } from 'framer-motion';
+import { motion, useInView, AnimatePresence, wrap } from 'framer-motion';
 import { CardContent, RecipientResponse } from '../types';
 import { THEME_CONFIG } from '../constants';
-import { Heart, Music, ArrowDown, Play, Pause, Gift, Calendar, Clock, MapPin, X, Fingerprint, FileText, CheckCircle2, UserCheck, MailOpen, ThumbsUp, ThumbsDown, PenTool, Eraser, ChevronRight, Star, Smile, Camera } from 'lucide-react';
+import { Heart, Music, ArrowDown, Play, Gift, Calendar, Clock, MapPin, X, Fingerprint, FileText, CheckCircle2, UserCheck, ThumbsUp, ThumbsDown, PenTool, Eraser, ChevronRight, Star, Smile, Camera } from 'lucide-react';
 import { Button } from './Button';
+import { WeddingViewer } from './WeddingViewer';
 
 interface CardViewerProps {
   content: CardContent;
@@ -14,30 +16,60 @@ interface CardViewerProps {
 }
 
 export const CardViewer: React.FC<CardViewerProps> = ({ content, isPreview = false, existingResponse, onSaveResponse, isOwner = false }) => {
-  const theme = THEME_CONFIG[content.theme];
+  const theme = THEME_CONFIG[content.theme] || THEME_CONFIG.rose;
+
+  // Local map to avoid hoisting issues with const components
+  const COMPONENT_MAP: Record<string, React.ElementType> = {
+    'DefaultViewer': DefaultViewer,
+    'FriendshipTimelineViewer': FriendshipTimelineViewer,
+    'ValentineViewer': ValentineViewer,
+    'WeddingViewer': WeddingViewer
+  };
   
-  if (content.layout === 'timeline') {
-    return <FriendshipTimelineViewer content={content} theme={theme} isPreview={isPreview} existingResponse={existingResponse} onSaveResponse={onSaveResponse} isOwner={isOwner} />;
-  }
+  // 1. Try to find component by function name from DB/Template
+  // 2. Fallback to layout name if function name is missing (backward compatibility)
+  // 3. Fallback to DefaultViewer
+  let ComponentToRender: React.ElementType = DefaultViewer;
   
-  if (content.layout === 'valentine') {
-      return <ValentineViewer content={content} theme={theme} isPreview={isPreview} existingResponse={existingResponse} onSaveResponse={onSaveResponse} isOwner={isOwner} />;
+  if (content.renderFunction && COMPONENT_MAP[content.renderFunction]) {
+      ComponentToRender = COMPONENT_MAP[content.renderFunction];
+  } else if (content.layout) {
+      if (content.layout === 'timeline') ComponentToRender = FriendshipTimelineViewer;
+      else if (content.layout === 'valentine') ComponentToRender = ValentineViewer;
+      else if (content.layout === 'wedding') ComponentToRender = WeddingViewer;
   }
 
-  return <DefaultViewer content={content} theme={theme} isPreview={isPreview} />;
+  // Pass specific props based on component needs
+  const minHeightClass = isPreview ? 'min-h-full' : 'min-h-[100dvh]';
+
+  if (ComponentToRender === WeddingViewer) {
+      return <WeddingViewer content={content} minHeightClass={minHeightClass} />;
+  }
+
+  return (
+    <ComponentToRender 
+        content={content} 
+        theme={theme} 
+        isPreview={isPreview} 
+        existingResponse={existingResponse} 
+        onSaveResponse={onSaveResponse} 
+        isOwner={isOwner} 
+        minHeightClass={minHeightClass}
+    />
+  );
 };
 
 // ----------------------------------------------------------------------
 // LAYOUT 1: DEFAULT VERTICAL SCROLL
 // ----------------------------------------------------------------------
 
-const DefaultViewer = ({ content, theme, isPreview }: any) => {
+function DefaultViewer({ content, theme, isPreview, minHeightClass }: any) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [activeIndex, setActiveIndex] = useState(0);
     const heightClass = isPreview ? 'h-full' : 'h-[100dvh]';
-    const minHeightClass = isPreview ? 'min-h-full' : 'min-h-[100dvh]';
+    // Ensure minHeightClass is passed or default
+    const mHeight = minHeightClass || (isPreview ? 'min-h-full' : 'min-h-[100dvh]');
 
-    // Helper to scroll
     const scrollToSection = (index: number) => {
         if (containerRef.current) {
             const height = containerRef.current.clientHeight;
@@ -48,7 +80,6 @@ const DefaultViewer = ({ content, theme, isPreview }: any) => {
         }
     };
 
-    // Track scroll for active dot
     const handleScroll = () => {
         if (containerRef.current) {
             const { scrollTop, clientHeight } = containerRef.current;
@@ -57,9 +88,8 @@ const DefaultViewer = ({ content, theme, isPreview }: any) => {
         }
     };
     
-    // Section 1: Hero
     const HeroSection = () => (
-        <section className={`h-full ${minHeightClass} snap-start flex flex-col items-center justify-center p-8 text-center relative overflow-hidden ${theme.bg}`}>
+        <section className={`h-full ${mHeight} snap-start flex flex-col items-center justify-center p-8 text-center relative overflow-hidden ${theme.bg}`}>
             <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -78,7 +108,6 @@ const DefaultViewer = ({ content, theme, isPreview }: any) => {
             </h2>
             </motion.div>
 
-            {/* Floating Background Elements */}
             <motion.div 
             animate={{ y: [0, -20, 0] }}
             transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
@@ -109,9 +138,8 @@ const DefaultViewer = ({ content, theme, isPreview }: any) => {
         </section>
     );
 
-    // Section 2: Message
     const MessageSection = () => (
-        <section className={`h-full ${minHeightClass} snap-start flex items-center justify-center p-6 md:p-12 bg-white relative`}>
+        <section className={`h-full ${mHeight} snap-start flex items-center justify-center p-6 md:p-12 bg-white relative`}>
             <div className="max-w-2xl mx-auto text-center">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
@@ -129,9 +157,8 @@ const DefaultViewer = ({ content, theme, isPreview }: any) => {
         </section>
     );
 
-    // Section 3: Shayari / Quote
     const QuoteSection = () => (
-        <section className={`h-full ${minHeightClass} snap-start flex items-center justify-center p-8 ${theme.bg}`}>
+        <section className={`h-full ${mHeight} snap-start flex items-center justify-center p-8 ${theme.bg}`}>
             <motion.div
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -146,9 +173,8 @@ const DefaultViewer = ({ content, theme, isPreview }: any) => {
         </section>
     );
 
-    // Section 4: Gallery
     const GallerySection = () => (
-        <section className={`h-full ${minHeightClass} snap-start flex flex-col justify-center p-4 md:p-12 bg-gray-900 text-white`}>
+        <section className={`h-full ${mHeight} snap-start flex flex-col justify-center p-4 md:p-12 bg-gray-900 text-white`}>
             <h3 className="text-center text-2xl md:text-3xl font-serif mb-12 text-rose-200">Memories with You</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 max-w-6xl mx-auto w-full">
                 {content.images?.map((img: string, idx: number) => (
@@ -167,9 +193,8 @@ const DefaultViewer = ({ content, theme, isPreview }: any) => {
         </section>
     );
 
-    // Section 5: Footer/Signoff
     const SignOffSection = () => (
-        <section className={`h-full ${minHeightClass} snap-start flex flex-col items-center justify-center p-8 text-center bg-white`}>
+        <section className={`h-full ${mHeight} snap-start flex flex-col items-center justify-center p-8 text-center bg-white`}>
             <motion.div
                 initial={{ scale: 0 }}
                 whileInView={{ scale: 1 }}
@@ -189,7 +214,6 @@ const DefaultViewer = ({ content, theme, isPreview }: any) => {
         </section>
     );
 
-    // Dynamic Sections List
     const sections = [
         { id: 'hero', Component: HeroSection },
         { id: 'message', Component: MessageSection },
@@ -210,8 +234,6 @@ const DefaultViewer = ({ content, theme, isPreview }: any) => {
                     <Component key={id} />
                 ))}
             </div>
-
-            {/* Scroll Navigation Dots */}
             <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex flex-col gap-4 z-50">
                 {sections.map((_, idx) => (
                     <button
@@ -231,7 +253,7 @@ const DefaultViewer = ({ content, theme, isPreview }: any) => {
 }
 
 // ----------------------------------------------------------------------
-// LAYOUT 2: FRIENDSHIP TIMELINE (UPDATED with CYCLIC CAROUSEL & BACKGROUND)
+// LAYOUT 2: FRIENDSHIP TIMELINE COMPONENTS (EXTRACTED)
 // ----------------------------------------------------------------------
 
 const FriendshipBackgroundDecor = () => (
@@ -309,7 +331,7 @@ const TimelineHeroSection = ({ content, minHeightClass, theme, bgPattern }: any)
         </section>
     );
 };
- 
+
 const CyclicGallerySection = ({ content, minHeightClass }: any) => {
     const images = content.images || [];
     const [[page, direction], setPage] = useState([0, 0]);
@@ -447,6 +469,10 @@ const VideoSection = ({ content, minHeightClass }: any) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const isInView = useInView(videoRef, { amount: 0.6 });
 
+    // Use videoUrl if available, otherwise don't render or show placeholder if needed
+    // However, parent component handles conditional rendering now.
+    const videoSrc = content.videoUrl || "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2Fcard-templates%2F8358985420%2F1771114597828_1730903345651569.mp4?alt=media&token=a2bd44f0-a1c4-4f3a-ab25-070619fee58f";
+
     useEffect(() => {
         if (isInView && videoRef.current) {
             videoRef.current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
@@ -456,7 +482,7 @@ const VideoSection = ({ content, minHeightClass }: any) => {
         }
     }, [isInView]);
 
-    const videoSrc = content.videoUrl || "https://assets.mixkit.co/videos/preview/mixkit-friends-running-happily-on-the-beach-at-sunset-12963-large.mp4";
+    if (!videoSrc) return null;
 
     return (
         <section className={`${minHeightClass} snap-start bg-black flex items-center justify-center relative`}>
@@ -489,10 +515,13 @@ const GiftPreferencesSection = ({ content, minHeightClass, existingResponse, onS
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [justResponded, setJustResponded] = useState(false);
 
+
     // Logic: If owner visits and NO response exists, hide section.
     if (isOwner && !existingResponse) return null;
 
     const showResponseView = existingResponse || justResponded;
+
+
 
     const handleGiftSubmit = async () => {
         setIsSubmitting(true);
@@ -507,7 +536,10 @@ const GiftPreferencesSection = ({ content, minHeightClass, existingResponse, onS
         setIsSubmitting(false);
     };
 
-    if (showResponseView) {
+    console.log('existingResponse>>>', showResponseView, existingResponse, justResponded) ;
+
+
+    if ( Object.keys(existingResponse || {}).length > 0) {
          return (
             <section className={`${minHeightClass} snap-start flex flex-col items-center justify-center p-8 bg-teal-50`}>
                  <motion.div 
@@ -530,7 +562,7 @@ const GiftPreferencesSection = ({ content, minHeightClass, existingResponse, onS
                      
                      <div className="text-left bg-teal-50 p-4 rounded-xl space-y-3">
                          <div>
-                             <p className="text-xs font-bold text-teal-600 uppercase flex items-center gap-1"><ThumbsUp size={12}/> You want:</p>
+                             <p className="text-xs font-bold text-teal-600 uppercase flex items-center gap-1"><ThumbsUp size={12}/> You want:----</p>
                              <p className="text-sm text-gray-800">{existingResponse?.giftWants || giftWants || "Surprise me!"}</p>
                          </div>
                          <div>
@@ -608,28 +640,24 @@ const FinalSignoffSection = ({ content, minHeightClass, theme, bgPattern }: any)
     );
 };
 
-const FriendshipTimelineViewer = ({ content, theme, isPreview, existingResponse, onSaveResponse, isOwner }: any) => {
-    // Inject Dummy Data if needed for preview
-    const injectedContent = (!content.images || content.images.length === 0) ? {
+function FriendshipTimelineViewer({ content, theme, isPreview, existingResponse, onSaveResponse, isOwner, minHeightClass }: any) {
+    // Inject Dummy Data if needed for preview, but keep real images/video if present
+    const injectedContent = {
         ...content,
-        title: "Happy Birthday!",
-        recipientName: "Saloni",
-        message: "Wishing you a day filled with happiness and a year filled with joy. Happy Birthday!",
-        shayari: "May your day be filled with the same joy you bring to others.",
-        images: [
+        title: content.title || "Happy Birthday!",
+        recipientName: content.recipientName || "Friend",
+        senderName: content.senderName || "Me",
+        images: (content.images && content.images.length > 0) ? content.images : [
             "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=500&q=80",
             "https://images.unsplash.com/photo-1534180477871-5d6cc81f3920?w=500&q=80",
-            "https://images.unsplash.com/photo-1517022812141-23620dba5c23?w=500&q=80",
-            "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=500&q=80"
-        ],
-        senderName: "Abhinay",
-        friendshipYears: { start: '2022', end: '2026' }
-    } : content;
+            "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=500&q=80",
+            "https://images.unsplash.com/photo-1517022812141-23620dba5c23?w=500&q=80"
+        ]
+    };
 
     const containerRef = useRef<HTMLDivElement>(null);
     const bgPattern = theme.pattern || '';
     const heightClass = isPreview ? 'h-full' : 'h-[100dvh]';
-    const minHeightClass = isPreview ? 'min-h-full' : 'min-h-[100dvh]';
 
     return (
         <div className="relative w-full h-full">
@@ -642,7 +670,12 @@ const FriendshipTimelineViewer = ({ content, theme, isPreview, existingResponse,
                 <TimelineHeroSection content={injectedContent} minHeightClass={minHeightClass} theme={theme} bgPattern={bgPattern} />
                 <CyclicGallerySection content={injectedContent} minHeightClass={minHeightClass} />
                 <LongMessageSection content={injectedContent} minHeightClass={minHeightClass} theme={theme} bgPattern={bgPattern} />
-                <VideoSection content={injectedContent} minHeightClass={minHeightClass} />
+                
+                {/* Conditionally Render Video Section */}
+                {/* {content.videoUrl && ( */}
+                    <VideoSection content={injectedContent} minHeightClass={minHeightClass} />
+                {/* )} */}
+
                 <GiftPreferencesSection 
                     content={injectedContent} 
                     minHeightClass={minHeightClass} 
@@ -656,12 +689,11 @@ const FriendshipTimelineViewer = ({ content, theme, isPreview, existingResponse,
     );
 };
 
-
 // ----------------------------------------------------------------------
-// LAYOUT 3: VALENTINE INTERACTIVE (UPDATED with SIGNATURE PAD)
+// LAYOUT 3: VALENTINE INTERACTIVE
 // ----------------------------------------------------------------------
 
-const ValentineViewer = ({ content, theme, isPreview, existingResponse, onSaveResponse, isOwner }: any) => {
+function ValentineViewer({ content, theme, isPreview, existingResponse, onSaveResponse, isOwner, minHeightClass }: any) {
     // If owner, always start at proposal so they see the card they made.
     // If recipient (not owner) and responded, show saved state.
     const initialStep = 'proposal';
@@ -675,7 +707,6 @@ const ValentineViewer = ({ content, theme, isPreview, existingResponse, onSaveRe
         customDate: ''
     });
     
-    // Desktop Detection
     const [isDesktop, setIsDesktop] = useState(false);
     useEffect(() => {
         const checkDesktop = () => {
@@ -686,16 +717,13 @@ const ValentineViewer = ({ content, theme, isPreview, existingResponse, onSaveRe
         return () => window.removeEventListener('resize', checkDesktop);
     }, []);
 
-    // Fingerprint Logic
     const [pressProgress, setPressProgress] = useState(0);
     const pressTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
-    // Signature Logic
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [signatureData, setSignatureData] = useState<string | null>(null);
     const [isDrawing, setIsDrawing] = useState(false);
 
-    // Fingerprint Handlers
     const handlePressStart = () => {
         if(pressTimer.current) clearInterval(pressTimer.current);
         const startTime = Date.now();
@@ -720,7 +748,6 @@ const ValentineViewer = ({ content, theme, isPreview, existingResponse, onSaveRe
         }
     };
 
-    // Signature Handlers
     const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
         const canvas = canvasRef.current;
         if(!canvas) return;
@@ -740,7 +767,7 @@ const ValentineViewer = ({ content, theme, isPreview, existingResponse, onSaveRe
         
         ctx.beginPath();
         ctx.moveTo(x, y);
-        ctx.strokeStyle = "#e11d48"; // Rose color
+        ctx.strokeStyle = "#e11d48";
         ctx.lineWidth = 3;
         ctx.lineCap = "round";
     };
