@@ -69,8 +69,10 @@ export interface UserCard {
 }
 
 export interface User {
-  id: string;
+  uid: string;
   phone: string;
+  name: string;
+  email?: string;
   isLoggedIn: boolean;
   isAdmin?: boolean;
 }

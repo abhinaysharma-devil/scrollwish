@@ -63,6 +63,7 @@ export default function App() {
 
   const handleLogout = () => {
       setUser(null);
+      
       localStorage.removeItem('scrollwish_user');
   };
 

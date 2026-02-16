@@ -3,15 +3,18 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import imageCompression from "browser-image-compression";
 
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
+
+let secrets =import.meta.env
 
 // TODO: Replace with your actual Firebase configuration
 const firebaseConfig = {
-  apiKey: process.env.VITE_API_KEY,
-  authDomain: process.env.VITE_AUTH_DOMAIN,
-  projectId: process.env.VITE_PROJECT_ID,
-  storageBucket: process.env.VITE_STORAGE_BUCKET,
-  messagingSenderId: process.env.VITE_MESSAGING_SENDER_ID,
-  appId: process.env.VITE_APP_ID
+  apiKey: secrets.VITE_API_KEY,
+  authDomain: secrets.VITE_AUTH_DOMAIN,
+  projectId: secrets.VITE_PROJECT_ID,
+  storageBucket: secrets.VITE_STORAGE_BUCKET,
+  messagingSenderId: secrets.VITE_MESSAGING_SENDER_ID,
+  appId: secrets.VITE_APP_ID
 };
 
 // Safely initialize app or retrieve existing instance
@@ -41,3 +44,7 @@ export const uploadFile = async (file: File, path: string): Promise<string> => {
     throw error;
   }
 };
+
+
+export const auth = getAuth(app);
+export const provider = new GoogleAuthProvider();

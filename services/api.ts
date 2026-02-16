@@ -32,11 +32,19 @@ export const api = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ phone, otp })
-            }, { 
-                success: true, 
-                user: { id: 'mock_user_1', phone, isLoggedIn: true, isAdmin: true } 
+            }, {
+                success: true,
+                user: { id: 'mock_user_1', phone, isLoggedIn: true, isAdmin: true }
             });
         }
+    },
+
+    addUser: async (userData: { name: string; email: string; phone: string; uid: string }) => {
+        return request('/user/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData)
+        }, { success: true, user: { ...userData, isLoggedIn: true } });
     },
 
     // --- Public Data ---
@@ -46,11 +54,11 @@ export const api = {
             const cat = CATEGORIES.find(c => c.slug === categorySlug);
             if (cat) fallback = DEMO_TEMPLATES.filter(t => t.categoryId === cat.id);
         }
-        
-        const url = categorySlug && categorySlug !== 'all' 
-            ? `/templates?categorySlug=${categorySlug}` 
+
+        const url = categorySlug && categorySlug !== 'all'
+            ? `/templates?categorySlug=${categorySlug}`
             : `/templates`;
-            
+
         return request(url, undefined, fallback);
     },
 
@@ -84,13 +92,13 @@ export const api = {
             content: DEFAULT_CARD_CONTENT,
             recipientResponse: undefined
         };
-        
-        if(hash === 'wedding-demo') {
-             const weddingTemp = DEMO_TEMPLATES.find(t => t.layout === 'wedding');
-             if(weddingTemp) {
-                 mockCard.template = weddingTemp;
-                 mockCard.content = { ...DEFAULT_CARD_CONTENT, layout: 'wedding', renderFunction: 'WeddingViewer' };
-             }
+
+        if (hash === 'wedding-demo') {
+            const weddingTemp = DEMO_TEMPLATES.find(t => t.layout === 'wedding');
+            if (weddingTemp) {
+                mockCard.template = weddingTemp;
+                mockCard.content = { ...DEFAULT_CARD_CONTENT, layout: 'wedding', renderFunction: 'WeddingViewer' };
+            }
         }
 
         return request(`/cards/${hash}`, undefined, mockCard);
@@ -126,10 +134,10 @@ export const api = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ amount })
-        }, { 
-            id: 'order_mock_' + Math.random().toString(36).substring(7), 
-            currency: 'INR', 
-            amount: amount * 100 
+        }, {
+            id: 'order_mock_' + Math.random().toString(36).substring(7),
+            currency: 'INR',
+            amount: amount * 100
         });
     },
 
@@ -188,7 +196,7 @@ export const api = {
             return request(`/admin/templates/${id}`, { method: 'DELETE' }, { success: true });
         },
         toggleTemplateVisibility: async (id: string, isVisible: boolean) => {
-             return request(`/admin/templates/${id}`, {
+            return request(`/admin/templates/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ isVisible })

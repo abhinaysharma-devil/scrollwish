@@ -53,7 +53,7 @@ export const Header: React.FC<HeaderProps> = ({ onLoginClick, onLogoutClick, use
                   className="flex items-center gap-2 text-rose-600 font-medium bg-rose-50 px-4 py-2 rounded-full hover:bg-rose-100 transition-colors"
                 >
                   <UserIcon size={18} />
-                  <span>{user.phone}</span>
+                  <span>{user.phone || user.name}</span>
                 </button>
 
                 {isUserMenuOpen && (
