@@ -42,6 +42,7 @@ export default function App() {
   // Restore session on mount
   useEffect(() => {
       const savedUser = localStorage.getItem('scrollwish_user');
+      console.log('savedUser>>>>>>>>>>>>>>', savedUser)
       if (savedUser) {
           try {
               const parsed = JSON.parse(savedUser);

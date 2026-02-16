@@ -16,6 +16,8 @@ export const Header: React.FC<HeaderProps> = ({ onLoginClick, onLogoutClick, use
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
+  console.log('Header rendered with user:', user);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {

@@ -536,8 +536,6 @@ const GiftPreferencesSection = ({ content, minHeightClass, existingResponse, onS
         setIsSubmitting(false);
     };
 
-    console.log('existingResponse>>>', showResponseView, existingResponse, justResponded) ;
-
 
     if ( Object.keys(existingResponse || {}).length > 0) {
          return (

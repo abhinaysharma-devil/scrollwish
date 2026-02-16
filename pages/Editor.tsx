@@ -7,7 +7,7 @@ import { CardViewer } from '../components/CardViewer';
 import { DEFAULT_CARD_CONTENT, SHAYARI_LIBRARY, TEMPLATE_UPLOAD_PATH, THEME_CONFIG } from '../constants';
 import { CardContent, User } from '../types';
 import { api } from '../services/api';
-import { uploadFile } from '../services/firebase';
+import { convertHeicToJpeg, uploadFile } from '../services/firebase';
 import { Loader } from '../components/Loader';
 
 declare global {
@@ -130,9 +130,11 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
         try {
             for (const file of files) {
                 // Determine path based on user or anonymous
+                 let convertedFile = await convertHeicToJpeg(file);
+                 console.log('convertedFile', convertedFile)
                 const userPhone = user?.phone || 'anonymous';
                 const path = `${TEMPLATE_UPLOAD_PATH}/${userPhone}/${Date.now()}_${file.name}`;
-                const url = await uploadFile(file, path);
+                const url = await uploadFile(convertedFile, path);
                 newUrls.push(url);
             }
             

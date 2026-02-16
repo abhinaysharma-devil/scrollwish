@@ -60,15 +60,18 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin
 
       console.log("Google User:", firebaseUser);
 
-      await api.addUser({
+      let user = await api.addUser({
         uid: firebaseUser.uid,
         name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || "User",
         phone: firebaseUser.phoneNumber || "",
         email: firebaseUser.email || "",
       });
 
+      console.log('first>>', user)
+
       // Send user data back to parent
       onLoginSuccess({
+        id : user.user._id,
         uid: firebaseUser.uid,
         name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || "User",
         phone: firebaseUser.phoneNumber || "",

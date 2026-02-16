@@ -5,7 +5,28 @@ import imageCompression from "browser-image-compression";
 
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
-let secrets =import.meta.env
+import heic2any from "heic2any";
+
+export const convertHeicToJpeg = async (file: any) => {
+  if (file.type === "image/heic" || (file.name.endsWith(".heic") || file.name.endsWith(".HEIC"))) {
+
+    const convertedBlob = await heic2any({
+      blob: file,
+      toType: "image/jpeg",
+      quality: 0.95,
+    });
+
+    console.log('convertedBlob .....', convertedBlob)
+
+    return new File([convertedBlob], file.name.replace(".heic", ".jpg").replace(".HEIC", ".jpg"), {
+      type: "image/jpeg",
+    });
+  }
+
+  return file;
+};
+
+let secrets = import.meta.env
 
 // TODO: Replace with your actual Firebase configuration
 const firebaseConfig = {
@@ -30,10 +51,12 @@ export const uploadFile = async (file: File, path: string): Promise<string> => {
       maxSizeMB: 0.7, // compress to max 500KB
       maxWidthOrHeight: 1920, // Full HD quality
       useWebWorker: true,
-      initialQuality: 0.7, // 90% quality (almost no loss)
+      initialQuality: 0.70, // 95% quality (almost no loss)
     };
 
-    const compressedFile = await imageCompression(file, options);
+    let uploadFile = await convertHeicToJpeg(file);
+
+    const compressedFile = await imageCompression(uploadFile, options);
 
     const storageRef = ref(storage, path);
     const snapshot = await uploadBytes(storageRef, compressedFile);
