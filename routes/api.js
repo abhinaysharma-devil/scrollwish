@@ -84,7 +84,7 @@ router.post('/user/add', async (req, res) => {
     try {
         const { email, uid, phone, name } = req.body;
 
-        console.log("Adding user req.body ",req.body);
+        console.log("Adding user req.body ", req.body);
         let user = await User.findOne({ email });
         if (!user) {
             let userWithPhone = await User.findOne({ phone });
@@ -156,7 +156,8 @@ router.get('/templates', async (req, res) => {
             themeColor: t.themeColor,
             layout: t.layout,
             renderFunction: t.renderFunction,
-            isVisible: t.isVisible
+            isVisible: t.isVisible,
+            slug: t.slug
         }));
         res.json(formatted);
     } catch (e) {
@@ -164,9 +165,35 @@ router.get('/templates', async (req, res) => {
     }
 });
 
-router.get('/templates/:id', async (req, res) => {
+// router.get('/templates/:id', async (req, res) => {
+//     try {
+//         console.log('first', first)
+//         const template = await Template.findById(req.params.id).populate('category');
+//         if (template) {
+//             res.json({
+//                 id: template._id,
+//                 title: template.title,
+//                 categoryId: template.category?._id,
+//                 previewImage: template.previewImage,
+//                 isPaid: template.isPaid,
+//                 price: template.price,
+//                 themeColor: template.themeColor,
+//                 layout: template.layout,
+//                 renderFunction: template.renderFunction,
+//                 isVisible: template.isVisible
+//             });
+//         } else {
+//             res.status(404).json({ error: "Template not found" });
+//         }
+//     } catch (e) {
+//         res.status(500).json({ error: "Server error" });
+//     }
+// });
+
+router.get('/templates/:slug', async (req, res) => {
     try {
-        const template = await Template.findById(req.params.id).populate('category');
+        // const template = await Template.findById(req.params.id).populate('category');
+        const template = await Template.findOne({ slug: req.params.slug }).populate('category');
         if (template) {
             res.json({
                 id: template._id,

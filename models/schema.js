@@ -30,7 +30,8 @@ const TemplateSchema = new mongoose.Schema({
   themeColor: { type: String },
   layout: { type: String, enum: ['default', 'timeline', 'valentine', 'wedding'], default: 'default' },
   renderFunction: { type: String, default: 'DefaultViewer' }, // New field for dynamic rendering
-  isVisible: { type: Boolean, default: true }
+  isVisible: { type: Boolean, default: true },
+  slug : {type : String, required : true, unique: true}
 });
 
 // UserCard Schema (Created Cards)
