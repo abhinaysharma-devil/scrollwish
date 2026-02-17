@@ -2,8 +2,8 @@
 import { CardContent, CardTemplate, Category, User, UserCard } from '../types';
 import { CATEGORIES, DEMO_TEMPLATES, DEFAULT_CARD_CONTENT } from '../constants';
 
-// const API_URL = 'http://localhost:5000/api';
-const API_URL = 'https://scrollwish-api-155830263049.asia-south1.run.app/api';
+const API_URL = 'http://localhost:5000/api';
+// const API_URL = 'https://scrollwish-api-155830263049.asia-south1.run.app/api';
 // Helper to handle response with fallback
 const request = async <T>(endpoint: string, options?: RequestInit, fallback?: T): Promise<T> => {
     try {
@@ -62,9 +62,14 @@ export const api = {
         return request(url, undefined, fallback);
     },
 
-    getTemplateById: async (id: string): Promise<CardTemplate | undefined> => {
-        return request(`/templates/${id}`, undefined, DEMO_TEMPLATES.find(t => t.id === id));
+    // getTemplateById: async (id: string): Promise<CardTemplate | undefined> => {
+    //     return request(`/templates/${id}`, undefined, DEMO_TEMPLATES.find(t => t.id === id));
+    // },
+
+    getTemplateBySlug: async (slug: string): Promise<CardTemplate | undefined> => {
+        return request(`/templates/${slug}`, undefined);
     },
+
 
     getCategories: async (): Promise<Category[]> => {
         return request('/categories', undefined, CATEGORIES);

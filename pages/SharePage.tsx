@@ -6,6 +6,7 @@ import { Button } from '../components/Button';
 import { Sparkles, Lock, Gift, User as UserIcon } from 'lucide-react';
 import { mockCards, mockPayment } from '../services/mockService';
 import { Loader } from '../components/Loader';
+import { SEO } from '../components/SEO';
 
 declare global {
     interface Window {
@@ -123,9 +124,27 @@ export const SharePage: React.FC<SharePageProps> = ({ user, onLoginReq }) => {
         }
     };
 
+    // Determine SEO Metadata dynamically
+    let seoTitle = "You have a new surprise! - ScrollWish";
+    let seoDescription = "Someone sent you a magical digital greeting card. Tap to view the surprise.";
+    let seoImage = "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=1200&q=80";
+
+    if (cardData && cardData.content) {
+        const sender = cardData.content.senderName || "A Friend";
+        const recipient = cardData.content.recipientName || "You";
+        seoTitle = `${sender} sent a card for ${recipient}! 🎁`;
+        seoDescription = "Tap to open your personalized animated greeting card on ScrollWish.";
+        if (cardData.content.images && cardData.content.images.length > 0) {
+            seoImage = cardData.content.images[0];
+        } else if (cardData.template && cardData.template.previewImage) {
+            seoImage = cardData.template.previewImage;
+        }
+    }
+
     if (loading) {
         return (
             <div className="h-screen w-full bg-rose-50">
+                <SEO title="Opening surprise..." />
                 <Loader text="Opening your surprise..." />
             </div>
         )
@@ -134,6 +153,7 @@ export const SharePage: React.FC<SharePageProps> = ({ user, onLoginReq }) => {
     if (error || !cardData) {
         return (
             <div className="h-screen w-full flex flex-col items-center justify-center bg-white p-4 text-center">
+                <SEO title="Card Not Found" />
                 <h1 className="text-2xl font-bold text-gray-800 mb-2">Oops!</h1>
                 <p className="text-gray-500 mb-4">{error || "Card not found"}</p>
                 <Link to="/">
@@ -149,6 +169,7 @@ export const SharePage: React.FC<SharePageProps> = ({ user, onLoginReq }) => {
     if (cardData.isLocked) {
         return (
             <div className="h-screen w-full flex flex-col items-center justify-center bg-gray-900 p-4 relative overflow-hidden">
+                <SEO title="Locked Surprise - ScrollWish" />
                 <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
 
                 <div className="bg-white/10 backdrop-blur-lg p-8 rounded-3xl max-w-md w-full text-center border border-white/20 shadow-2xl z-10">
@@ -200,6 +221,11 @@ export const SharePage: React.FC<SharePageProps> = ({ user, onLoginReq }) => {
 
     return (
         <>
+            <SEO
+                title={seoTitle}
+                description={seoDescription}
+                image={seoImage}
+            />
             <CardViewer
                 content={content!}
                 existingResponse={existingResponse}

@@ -74,7 +74,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/explore" element={<Explore />} />
-          <Route path="/editor/:templateId" element={<Editor user={user} onLoginReq={() => setIsLoginOpen(true)} />} />
+          <Route path="/editor/:slug" element={<Editor user={user} onLoginReq={() => setIsLoginOpen(true)} />} />
           <Route path="/card/:hash" element={<SharePage user={user} onLoginReq={() => setIsLoginOpen(true)} />} />
           <Route path="/my-cards" element={<MyCards user={user} />} />
           <Route path="/admin" element={<AdminDashboard />} />

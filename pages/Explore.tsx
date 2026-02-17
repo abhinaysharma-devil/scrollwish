@@ -7,7 +7,9 @@ import { CATEGORIES } from '../constants';
 import { CardTemplate } from '../types';
 import { api } from '../services/api';
 import { Button } from '../components/Button';
-import { i } from 'framer-motion/client';
+
+import { SEO } from '../components/SEO';
+
 
 export const Explore: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -15,6 +17,10 @@ export const Explore: React.FC = () => {
     const currentCategorySlug = searchParams.get('cat') || 'all';
 
     const [categories, setCategories] = useState(CATEGORIES);
+
+    // Derive title for SEO
+    const currentCategoryName = CATEGORIES.find(c => c.slug === currentCategorySlug)?.name || "All Cards";
+    const pageTitle = `Explore ${currentCategoryName} Templates - ScrollWish`;
 
     useEffect(() => {
         // In real app, fetch categories from API
@@ -63,6 +69,11 @@ export const Explore: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
+            <SEO
+                title={pageTitle}
+                description={`Browse our collection of ${currentCategoryName} greetings. Create animated, scroll-based cards for your loved ones.`}
+            />
+
             {/* Header Area */}
             <div className="bg-white border-b border-gray-200 pt-8 pb-4 px-4 sticky top-16 z-30">
                 <div className="max-w-7xl mx-auto">
@@ -73,8 +84,8 @@ export const Explore: React.FC = () => {
                         <button
                             onClick={() => handleCategoryChange('all')}
                             className={`px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${currentCategorySlug === 'all'
-                                    ? 'bg-rose-500 text-white shadow-md shadow-rose-200'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                ? 'bg-rose-500 text-white shadow-md shadow-rose-200'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                 }`}
                         >
                             All Cards
@@ -84,8 +95,8 @@ export const Explore: React.FC = () => {
                                 key={cat.id}
                                 onClick={() => handleCategoryChange(cat.slug)}
                                 className={`px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${currentCategorySlug === cat.slug
-                                        ? 'bg-rose-500 text-white shadow-md shadow-rose-200'
-                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    ? 'bg-rose-500 text-white shadow-md shadow-rose-200'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
                             >
                                 {cat.icon} {cat.name}
@@ -118,7 +129,7 @@ export const Explore: React.FC = () => {
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3 p-4">
                                         <Button
                                             size="sm"
-                                            onClick={() => navigate(`/editor/${card.id}`)}
+                                            onClick={() => navigate(`/editor/${card.slug}`)}
                                             className="w-full"
                                         >
                                             Customize

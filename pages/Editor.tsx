@@ -9,6 +9,7 @@ import { CardContent, User } from '../types';
 import { api } from '../services/api';
 import { convertHeicToJpeg, uploadFile } from '../services/firebase';
 import { Loader } from '../components/Loader';
+import { SEO } from '../components/SEO';
 
 declare global {
     interface Window {
@@ -36,7 +37,8 @@ const loadRazorpayScript = () => {
 };
 
 export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
-    const { templateId } = useParams();
+    const { slug } = useParams();
+    console.log("---------------", slug)
     const navigate = useNavigate();
     const [content, setContent] = useState<CardContent>(DEFAULT_CARD_CONTENT);
     const [activeTab, setActiveTab] = useState<'text' | 'media' | 'theme'>('text');
@@ -46,83 +48,84 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
     const [loadingTemplate, setLoadingTemplate] = useState(true);
     const [templateIsPaid, setTemplateIsPaid] = useState(false);
     const [currentTemplate, setCurrentTemplate] = useState<any>(null);
-    
+
     // Media Upload State
     const [uploading, setUploading] = useState(false);
     const [includeVideo, setIncludeVideo] = useState(false);
 
     useEffect(() => {
         const loadTemplate = async () => {
-             if (templateId) {
-                 try {
-                     const t = await api.getTemplateById(templateId);
-                     if (t) {
-                         setTemplateIsPaid(t.isPaid);
-                         setCurrentTemplate(t);
-                         
-                         // Initialize Content
-                         const baseContent: CardContent = { 
-                             ...t, 
-                             theme: t.themeColor as any, 
-                             layout: t.layout,
-                             renderFunction: t.renderFunction // CRITICAL: Persist render function
-                         };
+            if (slug) {
+                try {
+                    //  const t = await api.getTemplateById(templateId);
+                    const t = await api.getTemplateBySlug(slug);
+                    if (t) {
+                        setTemplateIsPaid(t.isPaid);
+                        setCurrentTemplate(t);
 
-                         if (t.layout === 'timeline') {
-                             setContent({
-                                 ...baseContent,
-                                 recipientName: "Saloni",
-                                 senderName: "Abhinay",
-                                 message: "Jo kapde Mahkade use kehete itra, mai tera dost tu meri param mitra. Happy Friendship Day!",
-                                 friendshipYears: { start: '2022', end: '2026' },
-                                 theme: 'friendship',
-                                 images: [
-                                    "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2Fcard-templates%2F8358985420%2F1771114509074_84d10e7c-cfd7-4491-a1c9-f83c9f53061c.jpg?alt=media&token=68650c1e-6b26-4de5-8f6f-cd60eced25ab", 
-                                    "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2Fcard-templates%2F8358985420%2F1771114511883_WhatsApp%20Image%202025-04-02%20at%2010.18.24%20PM.jpeg?alt=media&token=5db52c9b-03be-4970-a469-5002318bc0ba", 
+                        // Initialize Content
+                        const baseContent: CardContent = {
+                            ...t,
+                            theme: t.themeColor as any,
+                            layout: t.layout,
+                            renderFunction: t.renderFunction // CRITICAL: Persist render function
+                        };
+
+                        if (t.layout === 'timeline') {
+                            setContent({
+                                ...baseContent,
+                                recipientName: "Saloni",
+                                senderName: "Abhinay",
+                                message: "Jo kapde Mahkade use kehete itra, mai tera dost tu meri param mitra. Happy Friendship Day!",
+                                friendshipYears: { start: '2022', end: '2026' },
+                                theme: 'friendship',
+                                images: [
+                                    "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2Fcard-templates%2F8358985420%2F1771114509074_84d10e7c-cfd7-4491-a1c9-f83c9f53061c.jpg?alt=media&token=68650c1e-6b26-4de5-8f6f-cd60eced25ab",
+                                    "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2Fcard-templates%2F8358985420%2F1771114511883_WhatsApp%20Image%202025-04-02%20at%2010.18.24%20PM.jpeg?alt=media&token=5db52c9b-03be-4970-a469-5002318bc0ba",
                                     "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2Fcard-templates%2F8358985420%2F1771114509074_84d10e7c-cfd7-4491-a1c9-f83c9f53061c.jpg?alt=media&token=68650c1e-6b26-4de5-8f6f-cd60eced25ab"
-                                 ]
-                             });
-                             setIncludeVideo(!!baseContent.videoUrl);
-                         } else if (t.layout === 'valentine') {
-                             setContent({
-                                 ...baseContent,
-                                 theme: 'rose',
-                                 recipientName: 'Priya',
-                                 senderName: 'Pawan'
-                             });
-                         } else if (t.layout === 'wedding') {
-                             setContent({
-                                 ...baseContent,
-                                 theme: 'gold' as any,
-                                 recipientName: 'Modi', // Bride
-                                 senderName: 'Meloni', // Groom
-                                 weddingDate: '2026-12-25',
-                                 weddingTime: '18:00',
-                                 venueName: 'Parliament of India',
-                                 venueAddress: 'Delhi, India',
-                                 invitationNote: 'We invite you to share in our joy as we begin our new life together.',
-                                 images: [
-                                     "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2F1771175510496_Screenshot%202026-02-15%20224120.png?alt=media&token=2aa96c29-417e-48fd-bbaa-2eea28437bc2",  // Default Bride
-                                     "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2F1771175501040_Screenshot%202026-02-15%20224016.png?alt=media&token=b7194371-8f43-40db-91d9-3be9a4f71f4c", // Default Groom
-                                 ]
-                             });
-                         } else {
-                             setContent(baseContent);
-                         }
-                     }
-                 } catch (e) {
-                     console.error("Template load failed", e);
-                 }
-             }
-             setLoadingTemplate(false);
+                                ]
+                            });
+                            setIncludeVideo(!!baseContent.videoUrl);
+                        } else if (t.layout === 'valentine') {
+                            setContent({
+                                ...baseContent,
+                                theme: 'rose',
+                                recipientName: 'Priya',
+                                senderName: 'Pawan'
+                            });
+                        } else if (t.layout === 'wedding') {
+                            setContent({
+                                ...baseContent,
+                                theme: 'gold' as any,
+                                recipientName: 'Modi', // Bride
+                                senderName: 'Meloni', // Groom
+                                weddingDate: '2026-12-25',
+                                weddingTime: '18:00',
+                                venueName: 'Parliament of India',
+                                venueAddress: 'Delhi, India',
+                                invitationNote: 'We invite you to share in our joy as we begin our new life together.',
+                                images: [
+                                    "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2F1771175510496_Screenshot%202026-02-15%20224120.png?alt=media&token=2aa96c29-417e-48fd-bbaa-2eea28437bc2",  // Default Bride
+                                    "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2F1771175501040_Screenshot%202026-02-15%20224016.png?alt=media&token=b7194371-8f43-40db-91d9-3be9a4f71f4c", // Default Groom
+                                ]
+                            });
+                        } else {
+                            setContent(baseContent);
+                        }
+                    }
+                } catch (e) {
+                    console.error("Template load failed", e);
+                }
+            }
+            setLoadingTemplate(false);
         }
         loadTemplate();
-    }, [templateId]);
+    }, [slug]);
 
     // Handle Image Uploads
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
-        
+
         setUploading(true);
         const files = Array.from(e.target.files) as File[];
         const newUrls: string[] = [];
@@ -130,14 +133,14 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
         try {
             for (const file of files) {
                 // Determine path based on user or anonymous
-                 let convertedFile = await convertHeicToJpeg(file);
-                 console.log('convertedFile', convertedFile)
+                let convertedFile = await convertHeicToJpeg(file);
+                console.log('convertedFile', convertedFile)
                 const userPhone = user?.phone || 'anonymous';
                 const path = `${TEMPLATE_UPLOAD_PATH}/${userPhone}/${Date.now()}_${file.name}`;
                 const url = await uploadFile(convertedFile, path);
                 newUrls.push(url);
             }
-            
+
             // Append new images to existing ones
             setContent(prev => ({
                 ...prev,
@@ -159,12 +162,12 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
 
         setUploading(true);
         const file = e.target.files[0];
-        
+
         try {
             const userPhone = user?.phone || 'anonymous';
             const path = `${TEMPLATE_UPLOAD_PATH}/${userPhone}/${Date.now()}_${file.name}`;
             const url = await uploadFile(file, path);
-            
+
             setContent(prev => ({
                 ...prev,
                 videoUrl: url
@@ -205,7 +208,7 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
         setSaving(true);
         try {
             // 1. Save Card as Pending
-            const cardResponse = await api.createCard(user.id, templateId!, content, templateIsPaid);
+            const cardResponse = await api.createCard(user.id, slug!, content, templateIsPaid);
             const cardId = cardResponse.cardId;
 
             if (templateIsPaid) {
@@ -219,7 +222,7 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
 
                 // 2. Create Mock Order
                 const orderData = await api.createOrder(currentTemplate?.price || 99);
-                
+
                 // Use Environment Variable or fallback to the instruction string
                 const keyId = (import.meta as any).env.VITE_RAZORPAY_KEY_ID || "YOUR_RAZORPAY_KEY_ID_HERE";
 
@@ -241,7 +244,7 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                     currency: orderData.currency,
                     name: "ScrollWish",
                     description: `Unlock ${currentTemplate?.title}`,
-                    order_id: orderData.id.startsWith('order_mock') ? undefined : orderData.id, 
+                    order_id: orderData.id.startsWith('order_mock') ? undefined : orderData.id,
                     handler: async function (response: any) {
                         setSaving(true);
                         await api.verifyPayment({
@@ -266,13 +269,13 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                 };
 
                 const rzp = new window.Razorpay(razorpayOptions);
-                rzp.on('payment.failed', function (response: any){
+                rzp.on('payment.failed', function (response: any) {
                     console.error(response.error);
                     alert(`Payment Failed: ${response.error.description}`);
                     setSaving(false);
                 });
                 rzp.open();
-                
+
             } else {
                 setSaving(false);
                 navigate(`/card/${cardResponse.shareHash}`);
@@ -294,6 +297,7 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
 
     return (
         <div className="flex flex-col h-[calc(100vh-64px)] overflow-hidden bg-gray-100">
+            <SEO title={`Customize ${currentTemplate?.title || 'Card'} - ScrollWish`} />
             {/* Toolbar Header */}
             <div className="bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center z-20">
                 <div className="flex items-center gap-3">
@@ -303,15 +307,15 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                     <span className="font-semibold text-gray-800 hidden sm:inline">Customize Card</span>
                 </div>
                 <div className="flex gap-2">
-                     <button 
+                    <button
                         className="md:hidden p-2 text-rose-600 bg-rose-50 rounded-lg"
                         onClick={() => setShowPreviewModal(true)}
-                     >
+                    >
                         <Eye size={20} />
-                     </button>
-                    <Button 
-                        size="sm" 
-                        onClick={handleSave} 
+                    </button>
+                    <Button
+                        size="sm"
+                        onClick={handleSave}
                         isLoading={saving}
                         className="bg-green-600 hover:bg-green-700 shadow-green-200"
                     >
@@ -325,19 +329,19 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                 <div className="w-full md:w-[400px] bg-white border-r border-gray-200 flex flex-col z-10 overflow-hidden">
                     {/* Tabs */}
                     <div className="flex border-b border-gray-200">
-                        <button 
+                        <button
                             onClick={() => setActiveTab('text')}
                             className={`flex-1 py-4 text-sm font-medium flex justify-center gap-2 ${activeTab === 'text' ? 'text-rose-600 border-b-2 border-rose-600' : 'text-gray-500 hover:text-gray-700'}`}
                         >
                             <Type size={18} /> Text
                         </button>
-                        <button 
+                        <button
                             onClick={() => setActiveTab('media')}
                             className={`flex-1 py-4 text-sm font-medium flex justify-center gap-2 ${activeTab === 'media' ? 'text-rose-600 border-b-2 border-rose-600' : 'text-gray-500 hover:text-gray-700'}`}
                         >
                             <ImageIcon size={18} /> Media
                         </button>
-                        <button 
+                        <button
                             onClick={() => setActiveTab('theme')}
                             className={`flex-1 py-4 text-sm font-medium flex justify-center gap-2 ${activeTab === 'theme' ? 'text-rose-600 border-b-2 border-rose-600' : 'text-gray-500 hover:text-gray-700'}`}
                         >
@@ -352,11 +356,11 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                 {!isValentineLayout && !isWeddingLayout && (
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Card Title</label>
-                                        <input 
-                                            type="text" 
+                                        <input
+                                            type="text"
                                             value={content.title}
-                                            onChange={(e) => setContent({...content, title: e.target.value})}
-                                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none" 
+                                            onChange={(e) => setContent({ ...content, title: e.target.value })}
+                                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none"
                                         />
                                     </div>
                                 )}
@@ -364,20 +368,20 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">Start Year</label>
-                                            <input 
-                                                type="text" 
+                                            <input
+                                                type="text"
                                                 value={content.friendshipYears?.start || '2020'}
-                                                onChange={(e) => setContent({...content, friendshipYears: { ...(content.friendshipYears || { end: '2024' }), start: e.target.value }})}
-                                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none" 
+                                                onChange={(e) => setContent({ ...content, friendshipYears: { ...(content.friendshipYears || { end: '2024' }), start: e.target.value } })}
+                                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none"
                                             />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">End Year</label>
-                                            <input 
-                                                type="text" 
+                                            <input
+                                                type="text"
                                                 value={content.friendshipYears?.end || '2024'}
-                                                onChange={(e) => setContent({...content, friendshipYears: { ...(content.friendshipYears || { start: '2020' }), end: e.target.value }})}
-                                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none" 
+                                                onChange={(e) => setContent({ ...content, friendshipYears: { ...(content.friendshipYears || { start: '2020' }), end: e.target.value } })}
+                                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none"
                                             />
                                         </div>
                                     </div>
@@ -388,22 +392,22 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                         {isValentineLayout ? 'Partner\'s Name (Recipient)' : isWeddingLayout ? 'Bride Name' : 'Recipient Name'}
                                     </label>
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         value={content.recipientName}
-                                        onChange={(e) => setContent({...content, recipientName: e.target.value})}
-                                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none" 
+                                        onChange={(e) => setContent({ ...content, recipientName: e.target.value })}
+                                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                         {isWeddingLayout ? 'Groom Name' : 'Your Name'}
                                     </label>
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         value={content.senderName}
-                                        onChange={(e) => setContent({...content, senderName: e.target.value})}
-                                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none" 
+                                        onChange={(e) => setContent({ ...content, senderName: e.target.value })}
+                                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none"
                                     />
                                 </div>
 
@@ -413,58 +417,58 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
-                                                <input 
-                                                    type="date" 
+                                                <input
+                                                    type="date"
                                                     value={content.weddingDate}
-                                                    onChange={(e) => setContent({...content, weddingDate: e.target.value})}
-                                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none" 
+                                                    onChange={(e) => setContent({ ...content, weddingDate: e.target.value })}
+                                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none"
                                                 />
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">Time</label>
-                                                <input 
-                                                    type="time" 
+                                                <input
+                                                    type="time"
                                                     value={content.weddingTime}
-                                                    onChange={(e) => setContent({...content, weddingTime: e.target.value})}
-                                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none" 
+                                                    onChange={(e) => setContent({ ...content, weddingTime: e.target.value })}
+                                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none"
                                                 />
                                             </div>
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">Venue Name</label>
-                                            <input 
-                                                type="text" 
+                                            <input
+                                                type="text"
                                                 value={content.venueName}
-                                                onChange={(e) => setContent({...content, venueName: e.target.value})}
-                                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none" 
+                                                onChange={(e) => setContent({ ...content, venueName: e.target.value })}
+                                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none"
                                             />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">Venue Address</label>
-                                            <textarea 
+                                            <textarea
                                                 rows={2}
                                                 value={content.venueAddress}
-                                                onChange={(e) => setContent({...content, venueAddress: e.target.value})}
-                                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none" 
+                                                onChange={(e) => setContent({ ...content, venueAddress: e.target.value })}
+                                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none"
                                             />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">Google Maps Link</label>
-                                            <input 
-                                                type="text" 
+                                            <input
+                                                type="text"
                                                 value={content.venueMapUrl}
-                                                onChange={(e) => setContent({...content, venueMapUrl: e.target.value})}
+                                                onChange={(e) => setContent({ ...content, venueMapUrl: e.target.value })}
                                                 placeholder="https://maps.google.com/..."
-                                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none" 
+                                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none"
                                             />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">Invitation Note</label>
-                                            <textarea 
+                                            <textarea
                                                 rows={3}
                                                 value={content.invitationNote}
-                                                onChange={(e) => setContent({...content, invitationNote: e.target.value})}
-                                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none" 
+                                                onChange={(e) => setContent({ ...content, invitationNote: e.target.value })}
+                                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none"
                                             />
                                         </div>
                                     </>
@@ -473,23 +477,23 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                 {!isValentineLayout && !isWeddingLayout && (
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Main Message</label>
-                                        <textarea 
+                                        <textarea
                                             rows={4}
                                             value={content.message}
-                                            onChange={(e) => setContent({...content, message: e.target.value})}
-                                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none" 
+                                            onChange={(e) => setContent({ ...content, message: e.target.value })}
+                                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none"
                                         />
                                     </div>
                                 )}
-                                
+
                                 {!isTimelineLayout && !isValentineLayout && !isWeddingLayout && (
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Select Shayari / Quote</label>
                                         <div className="space-y-2">
                                             {SHAYARI_LIBRARY.map((s, idx) => (
-                                                <div 
+                                                <div
                                                     key={idx}
-                                                    onClick={() => setContent({...content, shayari: s})}
+                                                    onClick={() => setContent({ ...content, shayari: s })}
                                                     className={`p-3 rounded-lg border cursor-pointer text-sm transition-colors ${content.shayari === s ? 'border-rose-500 bg-rose-50' : 'border-gray-200 hover:border-rose-200'}`}
                                                 >Upload Photos
                                                     {s}
@@ -515,7 +519,7 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                                     {content.images.map((img, idx) => (
                                                         <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden group border border-gray-200">
                                                             <img src={img} alt="Memory" className="w-full h-full object-cover" />
-                                                            <button 
+                                                            <button
                                                                 onClick={() => removeImage(idx)}
                                                                 className="absolute top-0 right-0 bg-red-500 text-white p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                                             >
@@ -524,22 +528,22 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                                         </div>
                                                     ))}
                                                 </div>
-                                                
+
                                                 <div className="relative">
-                                                    <input 
-                                                        type="file" 
+                                                    <input
+                                                        type="file"
                                                         multiple
                                                         accept="image/*"
                                                         onChange={handleImageUpload}
-                                                        className="hidden" 
+                                                        className="hidden"
                                                         id="image-upload"
                                                         disabled={uploading}
                                                     />
-                                                    <label 
-                                                        htmlFor="image-upload" 
+                                                    <label
+                                                        htmlFor="image-upload"
                                                         className={`flex items-center justify-center gap-2 w-full p-4 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-rose-400 hover:bg-rose-50 transition-all ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                     >
-                                                        {uploading ? <Loader text="Uploading..." /> : <><Upload size={20} className="text-gray-400"/> <span className="text-gray-600 font-medium">Upload Photos</span></>}
+                                                        {uploading ? <Loader text="Uploading..." /> : <><Upload size={20} className="text-gray-400" /> <span className="text-gray-600 font-medium">Upload Photos</span></>}
                                                     </label>
                                                 </div>
                                             </div>
@@ -547,7 +551,7 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
 
                                         {/* VIDEO UPLOAD FOR TIMELINE */}
                                         <div className="pt-6 border-t border-gray-100">
-                                            <div 
+                                            <div
                                                 className="flex items-center gap-2 cursor-pointer mb-4"
                                                 onClick={toggleVideo}
                                             >
@@ -560,8 +564,8 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                                     {content.videoUrl ? (
                                                         <div className="relative rounded-xl overflow-hidden bg-black aspect-video mb-2">
                                                             <video src={content.videoUrl} controls className="w-full h-full object-contain" />
-                                                            <button 
-                                                                onClick={() => setContent({...content, videoUrl: undefined})}
+                                                            <button
+                                                                onClick={() => setContent({ ...content, videoUrl: undefined })}
                                                                 className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full shadow-lg hover:bg-red-700"
                                                             >
                                                                 <Trash2 size={16} />
@@ -569,21 +573,21 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                                         </div>
                                                     ) : (
                                                         <div className="relative">
-                                                            <input 
-                                                                type="file" 
+                                                            <input
+                                                                type="file"
                                                                 accept="video/*"
                                                                 onChange={handleVideoUpload}
-                                                                className="hidden" 
+                                                                className="hidden"
                                                                 id="video-upload"
                                                                 disabled={uploading}
                                                             />
-                                                            <label 
-                                                                htmlFor="video-upload" 
+                                                            <label
+                                                                htmlFor="video-upload"
                                                                 className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-all ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                             >
                                                                 {uploading ? <Loader text="Uploading Video..." /> : (
                                                                     <>
-                                                                        <Video size={32} className="text-purple-300 mb-2"/> 
+                                                                        <Video size={32} className="text-purple-300 mb-2" />
                                                                         <span className="text-gray-600 text-sm">Click to upload video</span>
                                                                         <span className="text-xs text-gray-400 mt-1">MP4, WebM (Max 20MB rec.)</span>
                                                                     </>
@@ -607,8 +611,8 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                                             try {
                                                                 const url = await uploadFile(e.target.files[0], `${TEMPLATE_UPLOAD_PATH}${user?.phone || 'anonymous'}/groom/${Date.now()}`);
                                                                 const imgs = [...content.images]; imgs[0] = url;
-                                                                setContent({...content, images: imgs});
-                                                            } catch(e) { alert("Upload failed"); }
+                                                                setContent({ ...content, images: imgs });
+                                                            } catch (e) { alert("Upload failed"); }
                                                             setUploading(false);
                                                         }
                                                     }} />
@@ -631,8 +635,8 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                                             try {
                                                                 const url = await uploadFile(e.target.files[0], `${TEMPLATE_UPLOAD_PATH}${user?.phone || 'anonymous'}/bride/${Date.now()}`);
                                                                 const imgs = [...content.images]; imgs[1] = url;
-                                                                setContent({...content, images: imgs});
-                                                            } catch(e) { alert("Upload failed"); }
+                                                                setContent({ ...content, images: imgs });
+                                                            } catch (e) { alert("Upload failed"); }
                                                             setUploading(false);
                                                         }
                                                     }} />
@@ -654,16 +658,16 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                             Add photos to your card gallery.
                                         </p>
                                         <div className="relative mb-4">
-                                            <input 
-                                                type="file" 
+                                            <input
+                                                type="file"
                                                 accept="image/*"
                                                 onChange={handleImageUpload}
-                                                className="hidden" 
+                                                className="hidden"
                                                 id="generic-image-upload"
                                                 disabled={uploading}
                                             />
-                                            <label 
-                                                htmlFor="generic-image-upload" 
+                                            <label
+                                                htmlFor="generic-image-upload"
                                                 className="flex items-center justify-center gap-2 w-full p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
                                             >
                                                 {uploading ? "Uploading..." : "+ Add Photo"}
@@ -674,7 +678,7 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                             {content.images.map((img, idx) => (
                                                 <div key={idx} className="relative aspect-square rounded-lg overflow-hidden group">
                                                     <img src={img} alt="" className="w-full h-full object-cover" />
-                                                    <button 
+                                                    <button
                                                         className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                                         onClick={() => removeImage(idx)}
                                                     >
@@ -695,7 +699,7 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                     {(Object.keys(THEME_CONFIG) as Array<keyof typeof THEME_CONFIG>).map((t) => (
                                         <button
                                             key={t}
-                                            onClick={() => setContent({...content, theme: t})}
+                                            onClick={() => setContent({ ...content, theme: t })}
                                             className={`p-4 rounded-xl border text-left transition-all ${content.theme === t ? 'border-rose-500 ring-2 ring-rose-200' : 'border-gray-200'}`}
                                         >
                                             <div className={`w-full h-8 rounded-lg mb-2 ${THEME_CONFIG[t].bg}`}></div>
@@ -710,29 +714,29 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
 
                 {/* Right Area - Preview */}
                 <div className="flex-1 bg-gray-100 hidden md:flex flex-col items-center justify-center p-8 relative transition-all duration-300">
-                     
-                     {/* Preview Toggle */}
-                     <div className="absolute top-6 flex gap-2 bg-white/50 backdrop-blur-sm p-1.5 rounded-full border border-gray-200 z-50">
-                        <button 
+
+                    {/* Preview Toggle */}
+                    <div className="absolute top-6 flex gap-2 bg-white/50 backdrop-blur-sm p-1.5 rounded-full border border-gray-200 z-50">
+                        <button
                             onClick={() => setPreviewMode('mobile')}
                             className={`p-2 rounded-full transition-all flex items-center gap-2 text-sm font-medium ${previewMode === 'mobile' ? 'bg-white shadow text-rose-600' : 'text-gray-500 hover:text-gray-700'}`}
                         >
                             <Smartphone size={18} /> Mobile
                         </button>
-                        <button 
+                        <button
                             onClick={() => setPreviewMode('desktop')}
                             className={`p-2 rounded-full transition-all flex items-center gap-2 text-sm font-medium ${previewMode === 'desktop' ? 'bg-white shadow text-rose-600' : 'text-gray-500 hover:text-gray-700'}`}
                         >
                             <Monitor size={18} /> Desktop
                         </button>
-                     </div>
+                    </div>
 
                     {/* Conditional Preview Frame */}
                     {previewMode === 'mobile' ? (
                         <div className="w-[375px] h-[750px] bg-black rounded-[40px] shadow-2xl overflow-hidden border-[8px] border-black relative transition-all duration-500 ease-in-out">
-                             <div className="w-full h-full bg-white overflow-hidden rounded-[32px]">
-                                 <CardViewer content={content} isPreview />
-                             </div>
+                            <div className="w-full h-full bg-white overflow-hidden rounded-[32px]">
+                                <CardViewer content={content} isPreview />
+                            </div>
                         </div>
                     ) : (
                         <div className="w-full h-full max-w-6xl aspect-video bg-white rounded-lg shadow-2xl overflow-hidden border border-gray-300 flex flex-col transition-all duration-500 ease-in-out">
@@ -756,7 +760,7 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
             {/* Mobile Preview Modal */}
             {showPreviewModal && (
                 <div className="fixed inset-0 z-50 bg-black flex flex-col">
-                    <button 
+                    <button
                         onClick={() => setShowPreviewModal(false)}
                         className="absolute top-4 right-4 z-50 text-white bg-black/50 p-2 rounded-full"
                     >

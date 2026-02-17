@@ -6,6 +6,7 @@ import { ArrowRight, Star, Heart, Play, Music, Shield, Smartphone, Zap, CheckCir
 import { Button } from '../components/Button';
 import { api } from '../services/api';
 import { CardTemplate, Category } from '../types';
+import { SEO } from '../components/SEO';
 
 const HERO_IMAGES = [
     "https://storage.googleapis.com/global-bucket-for-devils-projects/scrollwish/morgan-lane-18N4okmWccM-unsplash.jpg",
@@ -52,7 +53,10 @@ export const Home: React.FC = () => {
 
     return (
         <div className="flex flex-col min-h-screen font-sans">
-
+            <SEO
+                title="ScrollWish - Make Someone's Day Special"
+                description="Create emotional, animated digital greeting cards for birthdays, weddings, and valentine's day. It's more than a card, it's a story."
+            />
             {/* 1. HERO SECTION */}
             <section className="relative pt-24 pb-20 md:pt-32 md:pb-32 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-b from-rose-50 via-white to-white -z-10" />
@@ -314,7 +318,7 @@ export const Home: React.FC = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {trendingTemplates.map((template) => (
-                            <Link to={`/editor/${template.id}`} key={template.id} className="group">
+                            <Link to={`/editor/${template.slug}`} key={template.id} className="group">
                                 <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100">
                                     <div className="aspect-[4/5] overflow-hidden relative">
                                         <img src={template.previewImage} alt={template.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />

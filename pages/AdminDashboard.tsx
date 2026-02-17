@@ -220,7 +220,7 @@ export const AdminDashboard: React.FC = () => {
                             <tbody className="divide-y divide-gray-100">
                                 {cards.map(card => (
                                     <tr key={card._id} className="hover:bg-gray-50">
-                                        <td className="p-4 text-sm">{card.user?.phone || 'Unknown'}</td>
+                                        <td className="p-4 text-sm">{card.user?.phone || card.user?.email  || 'Unknown'}</td>
                                         <td className="p-4 text-sm">{card.template?.title || 'Unknown Template'}</td>
                                         <td className="p-4 text-sm text-gray-500">{new Date(card.createdAt).toLocaleDateString()}</td>
                                         <td className="p-4">
@@ -401,6 +401,10 @@ export const AdminDashboard: React.FC = () => {
                                         <div>
                                             <label className="block text-sm font-medium mb-1">Title</label>
                                             <input className="w-full border p-2 rounded" value={editingItem.title || ''} onChange={e => setEditingItem({ ...editingItem, title: e.target.value })} required />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1">Slug</label>
+                                            <input className="w-full border p-2 rounded" value={editingItem.slug || ''} onChange={e => setEditingItem({ ...editingItem, slug: e.target.value })} required />
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium mb-1">Category</label>
