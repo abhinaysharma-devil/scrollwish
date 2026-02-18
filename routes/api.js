@@ -218,17 +218,19 @@ router.get('/templates/:slug', async (req, res) => {
 // --- CARDS ---
 router.post('/cards', async (req, res) => {
     try {
-        const { userId, templateId, content, isPaid } = req.body;
+        const { userId, slug, content, isPaid } = req.body;
 
         if (!userId) {
             return res.status(401).json({ error: "User ID is required to create a card" });
         }
 
+        const template = await Template.findOne({ slug: slug })
+
         const shareHash = Math.random().toString(36).substring(2, 8);
 
         const newCard = new UserCard({
             user: userId,
-            template: templateId,
+            template: template._id,
             content,
             shareHash,
             paymentStatus: isPaid ? 'pending' : 'paid',
