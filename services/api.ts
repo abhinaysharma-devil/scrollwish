@@ -76,12 +76,12 @@ export const api = {
     },
 
     // --- Card Operations ---
-    createCard: async (userId: string, templateId: string, content: CardContent, isPaid: boolean) => {
+    createCard: async (userId: string, slug: string, content: CardContent, isPaid: boolean) => {
         const mockHash = Math.random().toString(36).substring(2, 8);
         return request('/cards', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, templateId, content, isPaid })
+            body: JSON.stringify({ userId, slug, content, isPaid })
         }, { success: true, shareHash: mockHash, cardId: 'mock_card_' + Date.now() });
     },
 

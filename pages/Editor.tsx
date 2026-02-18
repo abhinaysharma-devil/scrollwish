@@ -1,7 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Save, Share2, Type, Image as ImageIcon, Palette, Lock, Eye, Video, Monitor, Smartphone, Map, Calendar, Upload, Trash2, CheckSquare, Square } from 'lucide-react';
+import { ChevronLeft, Save, Share2, Type, Image as ImageIcon, Palette, Lock, Eye, Video, Monitor, Smartphone, Map, Calendar, Upload, Trash2, CheckSquare, Square, Mic, StopCircle, Play, Pause } from 'lucide-react';
 import { Button } from '../components/Button';
 import { CardViewer } from '../components/CardViewer';
 import { DEFAULT_CARD_CONTENT, SHAYARI_LIBRARY, TEMPLATE_UPLOAD_PATH, THEME_CONFIG } from '../constants';
@@ -52,6 +52,12 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
     // Media Upload State
     const [uploading, setUploading] = useState(false);
     const [includeVideo, setIncludeVideo] = useState(false);
+
+    // Audio Recorder State
+    const [isRecording, setIsRecording] = useState(false);
+    const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const audioChunksRef = useRef<Blob[]>([]);
 
     useEffect(() => {
         const loadTemplate = async () => {
@@ -109,6 +115,18 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                     "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2F1771175501040_Screenshot%202026-02-15%20224016.png?alt=media&token=b7194371-8f43-40db-91d9-3be9a4f71f4c", // Default Groom
                                 ]
                             });
+                        } else if (t.layout === "birthday_cake") {
+                            setContent({
+                                ...baseContent,
+                                recipientName: "Saloni",
+                                senderName: "Abhinay",
+                                message : "This birthday, I wish you abundant happiness and love. May all your dreams turn into reality and may lady luck visit your home today. Happy birthday to one of the sweetest people I’ve ever known.",
+                                images: [
+                                    "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2Fcard-templates%2Fanonymous%2F1771436204303_lok.jpeg?alt=media&token=30c9c554-ff21-433d-ba9f-1f83eed239df"
+                                ],
+                                audioMessageUrl : "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2Flaadle.mp3?alt=media&token=5ab8749c-f567-4dfd-a3e8-baf8d4aa2274"
+                            });
+
                         } else {
                             setContent(baseContent);
                         }
@@ -178,6 +196,63 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
         } finally {
             setUploading(false);
             e.target.value = '';
+        }
+    };
+
+    // --- Audio Recorder Logic ---
+    const startRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const mediaRecorder = new MediaRecorder(stream);
+            mediaRecorderRef.current = mediaRecorder;
+            audioChunksRef.current = [];
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    audioChunksRef.current.push(event.data);
+                }
+            };
+
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                setAudioBlob(audioBlob);
+                stream.getTracks().forEach(track => track.stop());
+            };
+
+            mediaRecorder.start();
+            setIsRecording(true);
+        } catch (error) {
+            console.error("Error accessing microphone:", error);
+            alert("Could not access microphone.");
+        }
+    };
+
+    const stopRecording = () => {
+        if (mediaRecorderRef.current && isRecording) {
+            mediaRecorderRef.current.stop();
+            setIsRecording(false);
+        }
+    };
+
+    const saveRecording = async () => {
+        if (!audioBlob) return;
+        setUploading(true);
+        try {
+            const file = new File([audioBlob], "voice_note.webm", { type: "audio/webm" });
+            const userId = user?.id || 'anonymous';
+            const path = `uploads/${userId}/audio/${Date.now()}_voice.webm`;
+            const url = await uploadFile(file, path);
+
+            setContent(prev => ({
+                ...prev,
+                audioMessageUrl: url
+            }));
+            setAudioBlob(null); // Clear buffer
+        } catch (error) {
+            console.error("Failed to upload recording", error);
+            alert("Failed to save recording.");
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -290,6 +365,7 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
     const isTimelineLayout = content.layout === 'timeline';
     const isValentineLayout = content.layout === 'valentine';
     const isWeddingLayout = content.layout === 'wedding';
+    const isBirthdayCakeLayout = content.layout === 'birthday_cake';
 
     if (loadingTemplate) {
         return <Loader text="Setting up your studio..." fullScreen />;
@@ -298,6 +374,7 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
     return (
         <div className="flex flex-col h-[calc(100vh-64px)] overflow-hidden bg-gray-100">
             <SEO title={`Customize ${currentTemplate?.title || 'Card'} - ScrollWish`} />
+
             {/* Toolbar Header */}
             <div className="bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center z-20">
                 <div className="flex items-center gap-3">
@@ -486,7 +563,7 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                     </div>
                                 )}
 
-                                {!isTimelineLayout && !isValentineLayout && !isWeddingLayout && (
+                                {!isTimelineLayout && !isValentineLayout && !isWeddingLayout && !isBirthdayCakeLayout && (
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Select Shayari / Quote</label>
                                         <div className="space-y-2">
@@ -495,7 +572,7 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                                     key={idx}
                                                     onClick={() => setContent({ ...content, shayari: s })}
                                                     className={`p-3 rounded-lg border cursor-pointer text-sm transition-colors ${content.shayari === s ? 'border-rose-500 bg-rose-50' : 'border-gray-200 hover:border-rose-200'}`}
-                                                >Upload Photos
+                                                >
                                                     {s}
                                                 </div>
                                             ))}
@@ -602,6 +679,9 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                 ) : isWeddingLayout ? (
                                     <>
                                         <div className="space-y-6">
+                                            {/* Wedding Specific Image Logic (Groom/Bride) */}
+                                            {/* ... existing wedding logic ... */}
+                                            {/* Keep this brief for brevity as it's unchanged */}
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">Groom's Photo</label>
                                                 <div className="relative">
@@ -652,6 +732,96 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                             </div>
                                         </div>
                                     </>
+                                ) : isBirthdayCakeLayout ? (
+                                    <div className="space-y-6">
+                                        <p className="text-sm text-gray-500 mb-4">
+                                            Upload photo for the birthday celebration.
+                                        </p>
+                                        <div className="relative mb-4">
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageUpload}
+                                                className="hidden"
+                                                id="generic-image-upload"
+                                                disabled={uploading}
+                                            />
+                                            <label
+                                                htmlFor="generic-image-upload"
+                                                className="flex items-center justify-center gap-2 w-full p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                                            >
+                                                {uploading ? "Uploading..." : "+ Set Birthday Person Photo"}
+                                            </label>
+                                        </div>
+                                        {content.images[0] && (
+                                            <div className="relative w-32 h-32 rounded-full overflow-hidden border-2 border-rose-200 mx-auto mb-6">
+                                                <img src={content.images[0]} alt="Person" className="w-full h-full object-cover" />
+                                                <button
+                                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-80 hover:opacity-100"
+                                                    onClick={() => removeImage(0)}
+                                                >
+                                                    <Trash2 size={12} />
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        <div className="border-t border-gray-200 pt-6">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Voice Message</label>
+
+                                            {content.audioMessageUrl ? (
+                                                <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg border border-green-200">
+                                                    <Play size={18} className="text-green-600" />
+                                                    <span className="text-sm text-green-700 flex-1 truncate">Message Recorded</span>
+                                                    <button
+                                                        onClick={() => setContent({ ...content, audioMessageUrl: undefined })}
+                                                        className="text-red-500 p-1 hover:bg-red-50 rounded"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-4">
+                                                    {/* Recording UI */}
+                                                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center">
+                                                        {!isRecording && !audioBlob && (
+                                                            <button
+                                                                onClick={startRecording}
+                                                                className="flex flex-col items-center justify-center gap-2 w-20 h-20 rounded-full bg-red-100 text-red-600 mx-auto hover:bg-red-200 transition-colors"
+                                                            >
+                                                                <Mic size={24} />
+                                                                <span className="text-xs font-bold">Record</span>
+                                                            </button>
+                                                        )}
+
+                                                        {isRecording && (
+                                                            <div className="flex flex-col items-center gap-3">
+                                                                <div className="w-20 h-20 rounded-full bg-red-500 flex items-center justify-center animate-pulse">
+                                                                    <Mic size={32} className="text-white" />
+                                                                </div>
+                                                                <span className="text-red-500 font-medium text-sm animate-pulse">Recording...</span>
+                                                                <Button size="sm" onClick={stopRecording} variant="outline" className="border-red-200 text-red-500">
+                                                                    Stop
+                                                                </Button>
+                                                            </div>
+                                                        )}
+
+                                                        {audioBlob && !isRecording && (
+                                                            <div className="space-y-3">
+                                                                <div className="flex items-center justify-center gap-2 text-green-600 font-medium">
+                                                                    <CheckSquare size={18} /> Recorded!
+                                                                </div>
+                                                                <audio controls src={URL.createObjectURL(audioBlob)} className="w-full h-8" />
+                                                                <div className="flex gap-2 justify-center">
+                                                                    <Button size="sm" variant="secondary" onClick={() => setAudioBlob(null)}>Discard</Button>
+                                                                    <Button size="sm" onClick={saveRecording} isLoading={uploading}>Use Recording</Button>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                 ) : (
                                     <>
                                         <p className="text-sm text-gray-500 mb-4">

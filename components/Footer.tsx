@@ -36,7 +36,7 @@ export const Footer: React.FC = () => {
 
         <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-gray-100">
           <p className="text-gray-400 text-sm flex items-center gap-1">
-            Made with <Heart size={14} className="text-rose-500 fill-rose-500" /> in 2024
+            Made with <Heart size={14} className="text-rose-500 fill-rose-500" /> in 2026
           </p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             <a href="#" className="text-gray-400 hover:text-rose-500"><Instagram size={20} /></a>
