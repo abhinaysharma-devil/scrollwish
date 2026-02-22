@@ -222,7 +222,26 @@ export const BirthdayCakeViewer: React.FC<BirthdayCakeViewerProps> = ({
 
     const startMicDetection = async () => {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            let stream: MediaStream | null = null;
+
+            // 1. Try with constraints (best for noise cancellation)
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    }
+                });
+            } catch (e) {
+                console.warn("High-quality mic constraints failed, trying fallback...");
+            }
+
+            // 2. Fallback to basic audio
+            if (!stream) {
+                stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            }
+
             micStreamRef.current = stream;
             const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
             const source = audioContext.createMediaStreamSource(stream);
@@ -232,7 +251,7 @@ export const BirthdayCakeViewer: React.FC<BirthdayCakeViewerProps> = ({
             analyserRef.current = analyser;
             checkAudioLevel();
         } catch (e) {
-            console.log("Mic access denied, waiting for countdown or tap");
+            console.log("Mic access denied, waiting for countdown or tap", e);
         }
     };
 

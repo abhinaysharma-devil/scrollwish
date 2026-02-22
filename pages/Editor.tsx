@@ -58,6 +58,42 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
     const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
+    const analyserRef = useRef<AnalyserNode | null>(null);
+    const animationFrameRef = useRef<number | null>(null);
+
+    const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
+    const [selectedDeviceId, setSelectedDeviceId] = useState<string>("");
+    const [recordingVolume, setRecordingVolume] = useState(0);
+
+
+    useEffect(() => {
+        const getDevices = async () => {
+            try {
+                // Prompt for permission first to ensure labels are available
+                await navigator.mediaDevices.getUserMedia({ audio: true });
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const audioInputs = devices.filter(device => device.kind === 'audioinput');
+                setAudioDevices(audioInputs);
+                if (audioInputs.length > 0) {
+                    // Prefer default if available, otherwise first one
+                    const defaultDevice = audioInputs.find(d => d.deviceId === 'default');
+                    setSelectedDeviceId(defaultDevice ? defaultDevice.deviceId : audioInputs[0].deviceId);
+                }
+            } catch (err) {
+                console.error("Error fetching audio devices:", err);
+            }
+        };
+
+        // Only fetch devices if we are on a layout that uses recording
+        if (content.layout === 'birthday_cake') {
+            getDevices();
+            navigator.mediaDevices.addEventListener('devicechange', getDevices);
+            return () => {
+                navigator.mediaDevices.removeEventListener('devicechange', getDevices);
+            };
+        }
+    }, [content.layout]);
+
 
     useEffect(() => {
         const loadTemplate = async () => {
@@ -120,11 +156,11 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                 ...baseContent,
                                 recipientName: "Saloni",
                                 senderName: "Abhinay",
-                                message : "This birthday, I wish you abundant happiness and love. May all your dreams turn into reality and may lady luck visit your home today. Happy birthday to one of the sweetest people I’ve ever known.",
+                                message: "This birthday, I wish you abundant happiness and love. May all your dreams turn into reality and may lady luck visit your home today. Happy birthday to one of the sweetest people I’ve ever known.",
                                 images: [
                                     "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2Fcard-templates%2Fanonymous%2F1771436204303_lok.jpeg?alt=media&token=30c9c554-ff21-433d-ba9f-1f83eed239df"
                                 ],
-                                audioMessageUrl : "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2Flaadle.mp3?alt=media&token=5ab8749c-f567-4dfd-a3e8-baf8d4aa2274"
+                                audioMessageUrl: "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2Flaadle.mp3?alt=media&token=5ab8749c-f567-4dfd-a3e8-baf8d4aa2274"
                             });
 
                         } else {
@@ -140,6 +176,74 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
         loadTemplate();
     }, [slug]);
 
+    // Handle Single Image Replace (for Birthday Cake)
+    // const handleImageReplace = async (e: React.ChangeEvent<HTMLInputElement>, index: number = 0) => {
+    //     if (!e.target.files || e.target.files.length === 0) return;
+
+    //     setUploading(true);
+    //     const file = e.target.files[0];
+
+    //     try {
+    //         const userId = user?.id || 'anonymous';
+    //         const path = `uploads/${userId}/images/${Date.now()}_${file.name}`;
+    //         const url = await uploadFile(file, path);
+
+    //         setContent(prev => {
+    //             const newImages = [...prev.images];
+    //             // Ensure array is large enough
+    //             while (newImages.length <= index) {
+    //                 newImages.push("");
+    //             }
+    //             newImages[index] = url;
+    //             return {
+    //                 ...prev,
+    //                 images: newImages
+    //             };
+    //         });
+    //     } catch (error) {
+    //         console.error("Image upload failed", error);
+    //         alert("Failed to upload image. Please check your configuration.");
+    //     } finally {
+    //         setUploading(false);
+    //         e.target.value = '';
+    //     }
+    // };
+
+
+    const handleImageReplace = async (e: React.ChangeEvent<HTMLInputElement>, index: number = 0) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+
+        const inputElement = e.target;
+        setUploading(true);
+        const file = inputElement.files![0];
+
+        try {
+            const userData = user?.phone || user?.email;
+
+            const path = `${TEMPLATE_UPLOAD_PATH}/${userData}/${Date.now()}_${file.name}`;
+            const url = await uploadFile(file, path);
+
+            setContent(prev => {
+                const newImages = [...prev.images];
+                // Ensure array is large enough
+                while (newImages.length <= index) {
+                    newImages.push("");
+                }
+                newImages[index] = url;
+                return {
+                    ...prev,
+                    images: newImages
+                };
+            });
+        } catch (error) {
+            console.error("Image upload failed", error);
+            alert("Failed to upload image. Please check your configuration.");
+        } finally {
+            setUploading(false);
+            inputElement.value = '';
+        }
+    };
+
     // Handle Image Uploads
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
@@ -152,9 +256,10 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
             for (const file of files) {
                 // Determine path based on user or anonymous
                 let convertedFile = await convertHeicToJpeg(file);
-                console.log('convertedFile', convertedFile)
-                const userPhone = user?.phone || 'anonymous';
-                const path = `${TEMPLATE_UPLOAD_PATH}/${userPhone}/${Date.now()}_${file.name}`;
+
+                const userData = user?.phone || user?.email;
+                
+                const path = `${TEMPLATE_UPLOAD_PATH}/${userData}/${Date.now()}_${file.name}`;
                 const url = await uploadFile(convertedFile, path);
                 newUrls.push(url);
             }
@@ -182,7 +287,7 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
         const file = e.target.files[0];
 
         try {
-            const userPhone = user?.phone || 'anonymous';
+            const userPhone = user?.phone || user?.email;
             const path = `${TEMPLATE_UPLOAD_PATH}/${userPhone}/${Date.now()}_${file.name}`;
             const url = await uploadFile(file, path);
 
@@ -199,11 +304,89 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
         }
     };
 
-    // --- Audio Recorder Logic ---
     const startRecording = async () => {
+        let stream: MediaStream | null = null;
+        let errorLog = "";
+
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const mediaRecorder = new MediaRecorder(stream);
+            // 1. Try with selected device and constraints
+            if (selectedDeviceId) {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        audio: {
+                            deviceId: { exact: selectedDeviceId },
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            autoGainControl: true
+                        }
+                    });
+                } catch (err: any) {
+                    console.warn("Selected device failed:", err);
+                    errorLog += `Selected device (${selectedDeviceId}) failed: ${err.name || err.message}. `;
+                }
+            }
+
+            // 2. Try default device with constraints (if 1 failed or no device selected)
+            if (!stream) {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        audio: {
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            autoGainControl: true
+                        }
+                    });
+                } catch (err: any) {
+                    console.warn("Default with constraints failed:", err);
+                    errorLog += `Default constraints failed: ${err.name || err.message}. `;
+                }
+            }
+
+            // 3. Try bare minimum (if 2 failed) - This often fixes Bluetooth/System mic issues
+            if (!stream) {
+                try {
+                    console.log("Attempting bare minimum audio request...");
+                    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                } catch (err: any) {
+                    console.error("Bare minimum failed:", err);
+                    errorLog += `Bare minimum failed: ${err.name || err.message}.`;
+                }
+            }
+
+            if (!stream) {
+                throw new Error("Could not access any microphone. " + errorLog);
+            }
+
+            // Set up Audio Context for visualization
+            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const source = audioContext.createMediaStreamSource(stream);
+            const analyser = audioContext.createAnalyser();
+            analyser.fftSize = 256;
+            source.connect(analyser);
+            analyserRef.current = analyser;
+
+            // Start visualization loop
+            const updateVolume = () => {
+                const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                analyser.getByteFrequencyData(dataArray);
+                const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+                setRecordingVolume(average);
+                animationFrameRef.current = requestAnimationFrame(updateVolume);
+            };
+            updateVolume();
+
+            // Use a supported mime type if possible, or default
+            let options: MediaRecorderOptions | undefined = undefined;
+            if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+                options = { mimeType: 'audio/webm;codecs=opus' };
+            } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+                options = { mimeType: 'audio/webm' };
+            } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                options = { mimeType: 'audio/mp4' };
+            }
+
+            const mediaRecorder = new MediaRecorder(stream, options);
+
             mediaRecorderRef.current = mediaRecorder;
             audioChunksRef.current = [];
 
@@ -214,16 +397,23 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
             };
 
             mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                const type = options?.mimeType || 'audio/webm';
+                const audioBlob = new Blob(audioChunksRef.current, { type });
                 setAudioBlob(audioBlob);
+
+                // Cleanup
                 stream.getTracks().forEach(track => track.stop());
+                if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+                audioContext.close();
+                setRecordingVolume(0);
             };
 
-            mediaRecorder.start();
+            // Start recording with 100ms timeslices to ensure data is available even if stopped quickly
+            mediaRecorder.start(100);
             setIsRecording(true);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error accessing microphone:", error);
-            alert("Could not access microphone.");
+            alert(error.message || "Could not access microphone. Please check your permissions and ensure a microphone is selected in your system settings.");
         }
     };
 
@@ -239,8 +429,8 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
         setUploading(true);
         try {
             const file = new File([audioBlob], "voice_note.webm", { type: "audio/webm" });
-            const userId = user?.id || 'anonymous';
-            const path = `uploads/${userId}/audio/${Date.now()}_voice.webm`;
+            const userData = user?.phone || user?.email;
+            const path = `${TEMPLATE_UPLOAD_PATH}/${userData}/${Date.now()}_${file.name}`;
             const url = await uploadFile(file, path);
 
             setContent(prev => ({
@@ -741,7 +931,7 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                             <input
                                                 type="file"
                                                 accept="image/*"
-                                                onChange={handleImageUpload}
+                                                onChange={(e) => handleImageReplace(e, 0)}
                                                 className="hidden"
                                                 id="generic-image-upload"
                                                 disabled={uploading}
@@ -783,6 +973,31 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                                 <div className="space-y-4">
                                                     {/* Recording UI */}
                                                     <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center">
+
+                                                        {/* Device Selector */}
+                                                        {!isRecording && !audioBlob && (
+                                                            <div className="mb-4">
+                                                                <label className="block text-xs font-medium text-gray-500 mb-1 text-left">Select Microphone</label>
+                                                                {audioDevices.length > 0 ? (
+                                                                    <select
+                                                                        value={selectedDeviceId}
+                                                                        onChange={(e) => setSelectedDeviceId(e.target.value)}
+                                                                        className="w-full text-sm p-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-rose-200 outline-none"
+                                                                    >
+                                                                        {audioDevices.map(device => (
+                                                                            <option key={device.deviceId} value={device.deviceId}>
+                                                                                {device.label || `Microphone ${device.deviceId.slice(0, 5)}...`}
+                                                                            </option>
+                                                                        ))}
+                                                                    </select>
+                                                                ) : (
+                                                                    <p className="text-xs text-red-500 bg-red-50 p-2 rounded border border-red-100">
+                                                                        No microphones found. Please check permissions.
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        )}
+
                                                         {!isRecording && !audioBlob && (
                                                             <button
                                                                 onClick={startRecording}

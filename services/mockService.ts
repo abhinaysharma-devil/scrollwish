@@ -1,7 +1,6 @@
 import { User, CardTemplate, CardContent } from '../types';
 
-// const API_URL = 'http://localhost:5000/api';
-const API_URL = 'https://scrollwish-api-155830263049.asia-south1.run.app/api';
+const API_URL = import.meta.env.VITE_API_URL
 // 
 const handleResponse = async (res: Response) => {
     if (!res.ok) {

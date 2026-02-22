@@ -47,21 +47,34 @@ export const storage = getStorage(app);
 export const uploadFile = async (file: File, path: string): Promise<string> => {
   try {
 
-    const options = {
-      maxSizeMB: 0.7, // compress to max 500KB
-      maxWidthOrHeight: 1920, // Full HD quality
-      useWebWorker: true,
-      initialQuality: 0.70, // 95% quality (almost no loss)
-    };
+    if (!file.name.endsWith(".webm")) {
 
-    let uploadFile = await convertHeicToJpeg(file);
+      const options = {
+        maxSizeMB: 0.7, // compress to max 500KB
+        maxWidthOrHeight: 1920, // Full HD quality
+        useWebWorker: true,
+        initialQuality: 0.70, // 95% quality (almost no loss)
+      };
 
-    const compressedFile = await imageCompression(uploadFile, options);
+      let uploadFile = await convertHeicToJpeg(file);
 
-    const storageRef = ref(storage, path);
-    const snapshot = await uploadBytes(storageRef, compressedFile);
-    const downloadURL = await getDownloadURL(snapshot.ref);
-    return downloadURL;
+      const compressedFile = await imageCompression(uploadFile, options);
+      const storageRef = ref(storage, path);
+      const snapshot = await uploadBytes(storageRef, compressedFile);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+
+      return downloadURL;
+
+    } else {
+
+      const storageRef = ref(storage, path);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+
+      return downloadURL;
+
+    }
+
   } catch (error) {
     console.error("Error uploading file:", error);
     throw error;

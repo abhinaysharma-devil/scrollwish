@@ -34,7 +34,7 @@ export const Header: React.FC<HeaderProps> = ({ onLoginClick, onLogoutClick, use
         <div className="flex justify-between h-16 items-center">
           <Link to="/" className="flex items-center gap-2 group">
             {/* <div className="p-2 bg-rose-500 rounded-xl text-white group-hover:rotate-12 transition-transform"> */}
-            <img src={logo} alt="ScrollWish Logo" className="h-8 w-11 rounded-full group-hover:scale-110 transition-transform duration-300" />
+            <img src={logo} alt="ScrollWish Logo" className="h-8 w-9 rounded-full group-hover:scale-110 transition-transform duration-300" />
 
             {/* </div> */}
             <span className="font-bold text-2xl bg-gradient-to-r from-rose-500 to-purple-600 bg-clip-text text-transparent">
