@@ -10,7 +10,7 @@ import { api } from '../services/api';
 import { convertHeicToJpeg, uploadFile } from '../services/firebase';
 import { Loader } from '../components/Loader';
 import { SEO } from '../components/SEO';
-
+import { templateDefaultData } from "../constants"
 declare global {
     interface Window {
         Razorpay: any;
@@ -116,53 +116,31 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                         if (t.layout === 'timeline') {
                             setContent({
                                 ...baseContent,
-                                recipientName: "Saloni",
-                                senderName: "Abhinay",
-                                message: "Jo kapde Mahkade use kehete itra, mai tera dost tu meri param mitra. Happy Friendship Day!",
-                                friendshipYears: { start: '2022', end: '2026' },
-                                theme: 'friendship',
-                                images: [
-                                    "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2Fcard-templates%2F8358985420%2F1771114509074_84d10e7c-cfd7-4491-a1c9-f83c9f53061c.jpg?alt=media&token=68650c1e-6b26-4de5-8f6f-cd60eced25ab",
-                                    "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2Fcard-templates%2F8358985420%2F1771114511883_WhatsApp%20Image%202025-04-02%20at%2010.18.24%20PM.jpeg?alt=media&token=5db52c9b-03be-4970-a469-5002318bc0ba",
-                                    "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2Fcard-templates%2F8358985420%2F1771114509074_84d10e7c-cfd7-4491-a1c9-f83c9f53061c.jpg?alt=media&token=68650c1e-6b26-4de5-8f6f-cd60eced25ab"
-                                ]
+                                ...templateDefaultData.FRIENDSHIP_JOURNEY
                             });
                             setIncludeVideo(!!baseContent.videoUrl);
                         } else if (t.layout === 'valentine') {
                             setContent({
                                 ...baseContent,
-                                theme: 'rose',
-                                recipientName: 'Priya',
-                                senderName: 'Pawan'
+                                ...templateDefaultData.VALENTINE_PROPOSAL
+
                             });
                         } else if (t.layout === 'wedding') {
                             setContent({
                                 ...baseContent,
-                                theme: 'gold' as any,
-                                recipientName: 'Modi', // Bride
-                                senderName: 'Meloni', // Groom
-                                weddingDate: '2026-12-25',
-                                weddingTime: '18:00',
-                                venueName: 'Parliament of India',
-                                venueAddress: 'Delhi, India',
-                                invitationNote: 'We invite you to share in our joy as we begin our new life together.',
-                                images: [
-                                    "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2F1771175510496_Screenshot%202026-02-15%20224120.png?alt=media&token=2aa96c29-417e-48fd-bbaa-2eea28437bc2",  // Default Bride
-                                    "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2F1771175501040_Screenshot%202026-02-15%20224016.png?alt=media&token=b7194371-8f43-40db-91d9-3be9a4f71f4c", // Default Groom
-                                ]
+                                ...templateDefaultData.ROYAL_WEDDING_INIVTE
                             });
                         } else if (t.layout === "birthday_cake") {
                             setContent({
                                 ...baseContent,
-                                recipientName: "Saloni",
-                                senderName: "Abhinay",
-                                message: "This birthday, I wish you abundant happiness and love. May all your dreams turn into reality and may lady luck visit your home today. Happy birthday to one of the sweetest people I’ve ever known.",
-                                images: [
-                                    "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2Fcard-templates%2Fanonymous%2F1771436204303_lok.jpeg?alt=media&token=30c9c554-ff21-433d-ba9f-1f83eed239df"
-                                ],
-                                audioMessageUrl: "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2Flaadle.mp3?alt=media&token=5ab8749c-f567-4dfd-a3e8-baf8d4aa2274"
+                                ...templateDefaultData.MAGIC_CANDLE_BIRTHDAY
                             });
 
+                        } else if (t.renderFunction === "JustForYouViewer") {
+                            setContent({
+                                ...baseContent,
+                                ...templateDefaultData.JUST_FOR_YOU
+                            });
                         } else {
                             setContent(baseContent);
                         }
@@ -258,7 +236,7 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                 let convertedFile = await convertHeicToJpeg(file);
 
                 const userData = user?.phone || user?.email;
-                
+
                 const path = `${TEMPLATE_UPLOAD_PATH}/${userData}/${Date.now()}_${file.name}`;
                 const url = await uploadFile(convertedFile, path);
                 newUrls.push(url);
@@ -556,6 +534,7 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
     const isValentineLayout = content.layout === 'valentine';
     const isWeddingLayout = content.layout === 'wedding';
     const isBirthdayCakeLayout = content.layout === 'birthday_cake';
+    const isJustForYouLayout = content.layout === "just_for_you"
 
     if (loadingTemplate) {
         return <Loader text="Setting up your studio..." fullScreen />;
@@ -741,7 +720,19 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                     </>
                                 )}
 
-                                {!isValentineLayout && !isWeddingLayout && (
+                                {isJustForYouLayout && (
+                                    <div className="mb-6">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Date We Matched</label>
+                                        <input
+                                            type="date"
+                                            value={content.weddingDate}
+                                            onChange={(e) => setContent({ ...content, weddingDate: e.target.value })}
+                                            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-rose-200 outline-none"
+                                        />
+                                    </div>
+                                )}
+
+                                {!isValentineLayout && !isWeddingLayout && !isJustForYouLayout && (
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Main Message</label>
                                         <textarea
@@ -1010,14 +1001,20 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
 
                                                         {isRecording && (
                                                             <div className="flex flex-col items-center gap-3">
-                                                                <div className="w-20 h-20 rounded-full bg-red-500 flex items-center justify-center animate-pulse">
-                                                                    <Mic size={32} className="text-white" />
+                                                                <div className="w-20 h-20 rounded-full bg-red-500 flex items-center justify-center relative overflow-hidden">
+                                                                    <div
+                                                                        className="absolute bottom-0 left-0 right-0 bg-red-700 transition-all duration-100 ease-linear opacity-50"
+                                                                        style={{ height: `${Math.min(recordingVolume * 2, 100)}%` }}
+                                                                    />
+                                                                    <Mic size={32} className="text-white z-10" />
                                                                 </div>
                                                                 <span className="text-red-500 font-medium text-sm animate-pulse">Recording...</span>
                                                                 <Button size="sm" onClick={stopRecording} variant="outline" className="border-red-200 text-red-500">
                                                                     Stop
                                                                 </Button>
                                                             </div>
+
+
                                                         )}
 
                                                         {audioBlob && !isRecording && (

@@ -76,6 +76,7 @@ export default function App() {
           <Route path="/explore" element={<Explore />} />
           <Route path="/editor/:slug" element={<Editor user={user} onLoginReq={() => setIsLoginOpen(true)} />} />
           <Route path="/card/:hash" element={<SharePage user={user} onLoginReq={() => setIsLoginOpen(true)} />} />
+          {/* <Route path="/view/:hash" element={<SharePage user={user} onLoginReq={() => setIsLoginOpen(true)} />} /> */}
           <Route path="/my-cards" element={<MyCards user={user} />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/terms" element={<Legal />} />

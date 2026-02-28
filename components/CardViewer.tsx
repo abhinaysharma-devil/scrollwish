@@ -7,7 +7,7 @@ import { Heart, Music, ArrowDown, Play, Gift, Calendar, Clock, MapPin, X, Finger
 import { Button } from './Button';
 import { WeddingViewer } from './WeddingViewer';
 import { BirthdayCakeViewer } from './BirthdayCakeViewer'; // Import new viewer
-
+import { JustForYouViewer } from './JustForYouViewer';
 
 interface CardViewerProps {
     content: CardContent;
@@ -26,7 +26,8 @@ export const CardViewer: React.FC<CardViewerProps> = ({ content, isPreview = fal
         'FriendshipTimelineViewer': FriendshipTimelineViewer,
         'ValentineViewer': ValentineViewer,
         'WeddingViewer': WeddingViewer,
-        'BirthdayCakeViewer': BirthdayCakeViewer // Register new viewer
+        'BirthdayCakeViewer': BirthdayCakeViewer, // Register new viewer
+         'JustForYouViewer': JustForYouViewer
     };
 
     // 1. Try to find component by function name from DB/Template
@@ -41,6 +42,7 @@ export const CardViewer: React.FC<CardViewerProps> = ({ content, isPreview = fal
         else if (content.layout === 'valentine') ComponentToRender = ValentineViewer;
         else if (content.layout === 'wedding') ComponentToRender = WeddingViewer;
         else if (content.layout === 'birthday_cake') ComponentToRender = BirthdayCakeViewer;
+        else if (content.layout === 'just_for_you') ComponentToRender = JustForYouViewer;
     }
 
     // Pass specific props based on component needs

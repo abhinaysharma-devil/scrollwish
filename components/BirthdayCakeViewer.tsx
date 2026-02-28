@@ -613,7 +613,7 @@ export const BirthdayCakeViewer: React.FC<BirthdayCakeViewerProps> = ({
                         </div>
                     ) : (
                         <>
-                            <h3 className="text-3xl font-handwriting text-slate-800 mb-8 text-center text-rose-500">Make a Wish ✨</h3>
+                            <h3 className="text-3xl font-handwriting text-slate-800 mb-8 text-center text-rose-500">Make a Wish</h3>
                             <div className="space-y-6">
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
@@ -648,7 +648,7 @@ export const BirthdayCakeViewer: React.FC<BirthdayCakeViewerProps> = ({
 
             {/* --- OUTRO --- */}
             <section className={`w-full ${minHeightClass} snap-start flex flex-col items-center justify-center p-8 bg-slate-900 text-white text-center`}>
-                <Sparkles size={64} className="text-yellow-400 mb-8 animate-pulse" />
+                {/* <Sparkles size={64} className="text-yellow-400 mb-8 animate-pulse" /> */}
                 <h2 className="text-5xl md:text-6xl font-handwriting mb-6">Have a Blast!</h2>
                 <p className="text-gray-400 mb-10 text-lg">Celebrating you today and always.</p>
                 <div className="flex gap-4">

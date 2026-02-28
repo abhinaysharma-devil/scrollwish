@@ -139,3 +139,49 @@ export const THEME_CONFIG = {
 
 export const TEMPLATE_UPLOAD_PATH = '/scrollwish/card-templates';
 export const PUBLIC_UPLOAD_PATH = '/scrollwish';
+
+export const templateDefaultData = {
+  JUST_FOR_YOU: {
+    senderName: "Devil",
+    recipientName: "Apsara"
+  },
+  MAGIC_CANDLE_BIRTHDAY: {
+    recipientName: "Lokesh",
+    senderName: "Abhinay",
+    message: "This birthday, I wish you abundant happiness and love. May all your dreams turn into reality and may lady luck visit your home today. Happy birthday to one of the sweetest people I’ve ever known.",
+    images: [
+      "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2Fcard-templates%2Fanonymous%2F1771436204303_lok.jpeg?alt=media&token=30c9c554-ff21-433d-ba9f-1f83eed239df"
+    ],
+    audioMessageUrl: "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2Flaadle.mp3?alt=media&token=5ab8749c-f567-4dfd-a3e8-baf8d4aa2274"
+  },
+  ROYAL_WEDDING_INIVTE: {
+    theme: 'gold',
+    recipientName: 'Modi', // Bride
+    senderName: 'Meloni', // Groom
+    weddingDate: '2026-12-25',
+    weddingTime: '18:00',
+    venueName: 'Parliament of India',
+    venueAddress: 'Delhi, India',
+    invitationNote: 'We invite you to share in our joy as we begin our new life together.',
+    images: [
+      "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2F1771175510496_Screenshot%202026-02-15%20224120.png?alt=media&token=2aa96c29-417e-48fd-bbaa-2eea28437bc2",  // Default Bride
+      "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2F1771175501040_Screenshot%202026-02-15%20224016.png?alt=media&token=b7194371-8f43-40db-91d9-3be9a4f71f4c", // Default Groom
+    ]
+  },
+  VALENTINE_PROPOSAL: {
+    recipientName: 'Apsara',
+    senderName: 'Devil'
+  },
+  FRIENDSHIP_JOURNEY: {
+    recipientName: "Saloni",
+    senderName: "Abhinay",
+    message: "Jo kapde Mahkade use kehete itra, mai tera dost tu meri param mitra. Happy Friendship Day!",
+    friendshipYears: { start: '2022', end: '2026' },
+    theme: 'friendship',
+    images: [
+      "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2Fcard-templates%2F8358985420%2F1771114509074_84d10e7c-cfd7-4491-a1c9-f83c9f53061c.jpg?alt=media&token=68650c1e-6b26-4de5-8f6f-cd60eced25ab",
+      "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2Fcard-templates%2F8358985420%2F1771114511883_WhatsApp%20Image%202025-04-02%20at%2010.18.24%20PM.jpeg?alt=media&token=5db52c9b-03be-4970-a469-5002318bc0ba",
+      "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2Fcard-templates%2F8358985420%2F1771114509074_84d10e7c-cfd7-4491-a1c9-f83c9f53061c.jpg?alt=media&token=68650c1e-6b26-4de5-8f6f-cd60eced25ab"
+    ]
+  }
+}

@@ -75,6 +75,7 @@ export const AdminDashboard: React.FC = () => {
                 api.getTemplates('all'),
                 api.getCategories()
             ]);
+            console.log("<<<<<<",c , t ,cat)
             setCards(c as any);
             setTemplates(t);
             setCategories(cat);
@@ -210,7 +211,7 @@ export const AdminDashboard: React.FC = () => {
                         <table className="w-full text-left">
                             <thead className="bg-gray-50 border-b border-gray-100">
                                 <tr>
-                                    <th className="p-4 font-semibold text-gray-600">User Phone</th>
+                                    <th className="p-4 font-semibold text-gray-600">User Detail</th>
                                     <th className="p-4 font-semibold text-gray-600">Template</th>
                                     <th className="p-4 font-semibold text-gray-600">Created</th>
                                     <th className="p-4 font-semibold text-gray-600">Status</th>
@@ -463,6 +464,7 @@ export const AdminDashboard: React.FC = () => {
                                                 <option value="valentine">Valentine</option>
                                                 <option value="wedding">Wedding</option>
                                                 <option value="birthday_cake">Birthday</option>
+                                                <option value="just_for_you">Just</option>
                                             </select>
                                         </div>
                                     </>
