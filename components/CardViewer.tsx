@@ -8,6 +8,7 @@ import { Button } from './Button';
 import { WeddingViewer } from './WeddingViewer';
 import { BirthdayCakeViewer } from './BirthdayCakeViewer'; // Import new viewer
 import { JustForYouViewer } from './JustForYouViewer';
+import { MySunflowerViewer } from './MySunflowerViewer';
 
 interface CardViewerProps {
     content: CardContent;
@@ -27,7 +28,8 @@ export const CardViewer: React.FC<CardViewerProps> = ({ content, isPreview = fal
         'ValentineViewer': ValentineViewer,
         'WeddingViewer': WeddingViewer,
         'BirthdayCakeViewer': BirthdayCakeViewer, // Register new viewer
-         'JustForYouViewer': JustForYouViewer
+        'JustForYouViewer': JustForYouViewer,
+        'MySunflowerViewer': MySunflowerViewer
     };
 
     // 1. Try to find component by function name from DB/Template
@@ -43,6 +45,7 @@ export const CardViewer: React.FC<CardViewerProps> = ({ content, isPreview = fal
         else if (content.layout === 'wedding') ComponentToRender = WeddingViewer;
         else if (content.layout === 'birthday_cake') ComponentToRender = BirthdayCakeViewer;
         else if (content.layout === 'just_for_you') ComponentToRender = JustForYouViewer;
+        else if (content.layout === 'my_sunflower') ComponentToRender = MySunflowerViewer;
     }
 
     // Pass specific props based on component needs
@@ -54,6 +57,10 @@ export const CardViewer: React.FC<CardViewerProps> = ({ content, isPreview = fal
 
     if (ComponentToRender === BirthdayCakeViewer) {
         return <BirthdayCakeViewer content={content} minHeightClass={minHeightClass} onSaveResponse={onSaveResponse} existingResponse={existingResponse} isOwner={isOwner} isPreview={isPreview} />;
+    }
+
+    if (ComponentToRender === MySunflowerViewer) {
+        return <MySunflowerViewer content={content} minHeightClass={minHeightClass} isPreview={isPreview} />;
     }
 
     return (

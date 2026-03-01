@@ -465,6 +465,7 @@ export const AdminDashboard: React.FC = () => {
                                                 <option value="wedding">Wedding</option>
                                                 <option value="birthday_cake">Birthday</option>
                                                 <option value="just_for_you">Just</option>
+                                                <option value="my_sunflower">My Sunflower</option>
                                             </select>
                                         </div>
                                     </>

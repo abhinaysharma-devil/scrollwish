@@ -11,6 +11,7 @@ import { convertHeicToJpeg, uploadFile } from '../services/firebase';
 import { Loader } from '../components/Loader';
 import { SEO } from '../components/SEO';
 import { templateDefaultData } from "../constants"
+import { MySunflowerEditor } from '../components/MySunflowerViewer';
 declare global {
     interface Window {
         Razorpay: any;
@@ -140,6 +141,11 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                             setContent({
                                 ...baseContent,
                                 ...templateDefaultData.JUST_FOR_YOU
+                            });
+                        } else if (t.renderFunction === "MySunflowerViewer") {
+                            setContent({
+                                ...baseContent,
+                                ...templateDefaultData.MY_SUNFLOWER
                             });
                         } else {
                             setContent(baseContent);
@@ -535,6 +541,7 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
     const isWeddingLayout = content.layout === 'wedding';
     const isBirthdayCakeLayout = content.layout === 'birthday_cake';
     const isJustForYouLayout = content.layout === "just_for_you"
+    const isSunflowerLayout = content.layout === 'my_sunflower';
 
     if (loadingTemplate) {
         return <Loader text="Setting up your studio..." fullScreen />;
@@ -599,7 +606,7 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                     <div className="flex-1 overflow-y-auto p-6 space-y-6">
                         {activeTab === 'text' && (
                             <div className="space-y-6 animate-fadeIn">
-                                {!isValentineLayout && !isWeddingLayout && (
+                                {!isValentineLayout && !isWeddingLayout && !isSunflowerLayout && (
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Card Title</label>
                                         <input
@@ -732,7 +739,17 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                     </div>
                                 )}
 
-                                {!isValentineLayout && !isWeddingLayout && !isJustForYouLayout && (
+                                {isSunflowerLayout && (
+                                    <MySunflowerEditor
+                                        content={content}
+                                        setContent={setContent}
+                                        uploading={uploading}
+                                        handleImageReplace={handleImageReplace}
+                                        activeTab="text"
+                                    />
+                                )}
+
+                                {!isValentineLayout && !isWeddingLayout && !isJustForYouLayout && !isSunflowerLayout && (
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Main Message</label>
                                         <textarea
@@ -1034,6 +1051,14 @@ export const Editor: React.FC<EditorProps> = ({ user, onLoginReq }) => {
                                             )}
                                         </div>
                                     </div>
+                                ) : isSunflowerLayout ? (
+                                    <MySunflowerEditor
+                                        content={content}
+                                        setContent={setContent}
+                                        uploading={uploading}
+                                        handleImageReplace={handleImageReplace}
+                                        activeTab="media"
+                                    />
                                 ) : (
                                     <>
                                         <p className="text-sm text-gray-500 mb-4">

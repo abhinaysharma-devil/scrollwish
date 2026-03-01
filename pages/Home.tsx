@@ -172,14 +172,16 @@ export const Home: React.FC = () => {
                                 Trending
                             </span>
                             <h2 className="text-4xl md:text-5xl font-serif font-bold mb-4">
-                                Plan the Perfect Proposal
+                                Wish birthday to your favourite person
                             </h2>
                             <p className="text-rose-100 text-lg mb-8 max-w-xl leading-relaxed">
-                                Make it unforgettable with our interactive Valentine's card. Features a fingerprint lock scanner, romantic music, and a "Yes/No" interaction that captures the moment.
+                                Make it unforgettable with our interactive Birthday card. Features a magic candle blow, Record your voice and give surprise messages.
+                                <br />
+                                <br /> 
                             </p>
-                            <Link to="/editor/t7">
+                            <Link to="/editor/magic-candle-birthday">
                                 <Button className="text-white bg-rose hover:bg-rose-500 border-none px-8 py-4 text-lg shadow-xl shadow-rose-900/20">
-                                    Create Proposal Card <Heart size={20} className="fill-current" />
+                                    Create Brithday Card <Heart size={20} className="fill-current" />
                                 </Button>
                             </Link>
                         </div>
@@ -189,7 +191,7 @@ export const Home: React.FC = () => {
                         >
                             <div className="aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20 rotate-3">
                                 <img
-                                    src="https://storage.googleapis.com/global-bucket-for-devils-projects/scrollwish/priscilla-du-preez-xSAiIM6Wa2c-unsplash%20(1).jpg"
+                                    src="https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2F1772389509093_magic-candle.jpg?alt=media&token=92ed243b-f740-40d6-956d-8f12fc7d9870"
                                     alt="Valentine Proposal"
                                     className="w-full h-full object-cover"
                                 />
@@ -201,7 +203,7 @@ export const Home: React.FC = () => {
                                             </div>
                                             <div>
                                                 <p className="text-xs text-gray-500 uppercase">Interactive</p>
-                                                <p className="font-bold text-gray-800 text-sm">"Will you be mine?"</p>
+                                                <p className="font-bold text-gray-800 text-sm">"Happy Birthday To you"</p>
                                             </div>
                                         </div>
                                     </div>

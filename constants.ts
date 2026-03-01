@@ -141,6 +141,14 @@ export const TEMPLATE_UPLOAD_PATH = '/scrollwish/card-templates';
 export const PUBLIC_UPLOAD_PATH = '/scrollwish';
 
 export const templateDefaultData = {
+  MY_SUNFLOWER: {
+    senderName: "Devil",
+    recipientName: "Apsara",
+    message : "You are the love of my life",
+    images: ["https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2F1772381520003_Gemini_Generated_Image_fs.png?alt=media&token=ec45cb48-42b6-4781-9512-cd738a91dbe6", 
+      "https://firebasestorage.googleapis.com/v0/b/global-bucket-for-devils-projects/o/scrollwish%2F1772383128603_lok-and-bindi.png?alt=media&token=2efff0af-fef8-4f8a-a2b9-aeb39b93b04d"],
+
+  },
   JUST_FOR_YOU: {
     senderName: "Devil",
     recipientName: "Apsara"

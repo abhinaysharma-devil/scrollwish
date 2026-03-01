@@ -198,7 +198,7 @@ export const BirthdayCakeViewer: React.FC<BirthdayCakeViewerProps> = ({
 
     const handleStartClick = () => {
         setStage(1);
-        startMicDetection();
+        // startMicDetection();
 
         // Start Countdown
         const interval = setInterval(() => {
@@ -220,40 +220,40 @@ export const BirthdayCakeViewer: React.FC<BirthdayCakeViewerProps> = ({
         bgAudioRef.current?.play().catch(e => console.log("Autoplay blocked", e));
     };
 
-    const startMicDetection = async () => {
-        try {
-            let stream: MediaStream | null = null;
+    // const startMicDetection = async () => {
+    //     try {
+    //         let stream: MediaStream | null = null;
 
-            // 1. Try with constraints (best for noise cancellation)
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({
-                    audio: {
-                        echoCancellation: true,
-                        noiseSuppression: true,
-                        autoGainControl: true
-                    }
-                });
-            } catch (e) {
-                console.warn("High-quality mic constraints failed, trying fallback...");
-            }
+    //         // 1. Try with constraints (best for noise cancellation)
+    //         try {
+    //             stream = await navigator.mediaDevices.getUserMedia({
+    //                 audio: {
+    //                     echoCancellation: true,
+    //                     noiseSuppression: true,
+    //                     autoGainControl: true
+    //                 }
+    //             });
+    //         } catch (e) {
+    //             console.warn("High-quality mic constraints failed, trying fallback...");
+    //         }
 
-            // 2. Fallback to basic audio
-            if (!stream) {
-                stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            }
+    //         // 2. Fallback to basic audio
+    //         if (!stream) {
+    //             stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    //         }
 
-            micStreamRef.current = stream;
-            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-            const source = audioContext.createMediaStreamSource(stream);
-            const analyser = audioContext.createAnalyser();
-            analyser.fftSize = 256;
-            source.connect(analyser);
-            analyserRef.current = analyser;
-            checkAudioLevel();
-        } catch (e) {
-            console.log("Mic access denied, waiting for countdown or tap", e);
-        }
-    };
+    //         micStreamRef.current = stream;
+    //         const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    //         const source = audioContext.createMediaStreamSource(stream);
+    //         const analyser = audioContext.createAnalyser();
+    //         analyser.fftSize = 256;
+    //         source.connect(analyser);
+    //         analyserRef.current = analyser;
+    //         checkAudioLevel();
+    //     } catch (e) {
+    //         console.log("Mic access denied, waiting for countdown or tap", e);
+    //     }
+    // };
 
     const stopMic = () => {
         if (micStreamRef.current) {
@@ -482,8 +482,8 @@ export const BirthdayCakeViewer: React.FC<BirthdayCakeViewerProps> = ({
 
 
                             <div className="flex items-center gap-2 text-rose-300 text-xs md:text-sm bg-white/10 px-4 py-2 md:px-6 md:py-2 rounded-full backdrop-blur-md border border-white/10">
-                                <Mic size={16} className="animate-pulse" />
-                                Blow air into mic or tap the cake
+                                {/* <Mic size={16} className="animate-pulse" /> */}
+                                Blow air into your screen
                             </div>
                         </motion.div>
                     )}
