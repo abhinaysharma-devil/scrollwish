@@ -352,7 +352,7 @@ router.post('/payment/verify', async (req, res) => {
 router.get('/admin/cards', async (req, res) => {
     try {
         const cards = await UserCard.find({})
-            .populate('user', 'phone')
+            .populate('user')
             .populate('template', 'title')
             .sort({ createdAt: -1 });
         res.json(cards);
